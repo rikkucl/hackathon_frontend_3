@@ -33,7 +33,7 @@ function App() {
   // const [displayname, setDisplayname] = useState<string>("")
   // const [displayfig, setDisplayfig] = useState<string>("")
   const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
-  const [visibleItems, setVisibleItems] = useState([]);
+  const [visibleItems, setVisibleItems] = useState<number[]>([]);
   //起動時に一回だけ実行
   useEffect(() =>{
     fetchTweet()
@@ -87,7 +87,7 @@ function App() {
 
   }
 
-  const handleClick = (key) => {
+  const handleClick = (key: number) => {
     setVisibleItems((prev) =>{
       if (prev.includes(key)) {
         return prev.filter((item) => item !== key);

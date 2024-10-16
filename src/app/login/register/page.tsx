@@ -8,7 +8,7 @@ import Post from "./ProfileFigure";
 import Link from "next/link";
 import { useAppContext } from "../../context";
 
-export const RegisterPage = () => {
+const RegisterPage = () => {
   const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +18,7 @@ export const RegisterPage = () => {
   const [password_p, setPassword_p] = useState("");
   const [registername_p, setRegistername_p] = useState("")
   const [figure_id_p, setFigure_id_p] = useState("")
+
   const signUpStandard = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
       try {
@@ -37,25 +38,26 @@ export const RegisterPage = () => {
           alert(err);
       }
     }
-    const signUpPremium = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      try {
-          const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
-          const user = userCredential.user
-          await setDoc(doc(db, "users", user.uid), {
-            registername: registername,
-            email: email,
-            createdAt: serverTimestamp(),
-            figid: figure_id,
-            status: "premium"
-          }).catch((error) => {
-            console.error("Error writting docment ", error)
-          })
-          alert("登録しました")
+
+  const signUpPremium = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+        const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
+        const user = userCredential.user
+        await setDoc(doc(db, "users", user.uid), {
+          registername: registername,
+          email: email,
+          createdAt: serverTimestamp(),
+          figid: figure_id,
+          status: "premium"
+        }).catch((error) => {
+          console.error("Error writting docment ", error)
+        })
+        alert("登録しました")
       } catch (err) {
           alert(err);
       }
-  }
+    }
 return (
   <div>
     <div className="register">
@@ -104,8 +106,8 @@ return (
     </div>
     <button>ユーザー登録</button>
     </form>
+    </div>
   </div>
-</div>
-) 
+  ) 
 }
-export default RegisterPage
+export default RegisterPage;
