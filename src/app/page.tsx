@@ -38,7 +38,7 @@ function App() {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
   const router = useRouter();
 
-  const handleNavigation = (id) => {
+  const handleNavigation = (id: string) => {
     router.push("/reply?text=${id}")
   }
   //起動時に一回だけ実行

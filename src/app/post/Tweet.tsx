@@ -4,7 +4,7 @@ import "../App.css"
 import React from 'react';
 import PostTweet  from "./Tweetfig";
 import { text } from "stream/consumers";
-import ReTweet from "../post/ReTweet";
+import ReTweet from "../reply/ReTweet";
 
 
 //Formの引数はfetch usersなので引数なし→void

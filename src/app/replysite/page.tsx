@@ -23,8 +23,10 @@ const Replypage = () => {
       const querystring = window.location.search;
       const params = new URLSearchParams(querystring)
       const id = params.get("text")
-      setTweet_id(id)
-    })
+      if (id) {
+        setTweet_id(id)
+      }
+    }, [])
     const filteredTweets = Tweets.filter(tweet => {
         const regex = new RegExp(tweet_id, 'i');
         return regex.test(tweet.replyto)
@@ -38,6 +40,8 @@ const Replypage = () => {
           }
         })
       }
+
+
     return (
         <div>
             {Object.values(filteredTweets).map((tweet, index) => (
@@ -45,9 +49,9 @@ const Replypage = () => {
                 <div className="tweetcontent">
                 <h5>{tweet.name}, {tweet.content}, {tweet.date}, {tweet.liked}</h5>  
                 </div>
-                <div className="tweetlike">
+                {/* <div className="tweetlike">
                 <button onClick={() => handlelike(tweet.id)}>いいね{tweet.liked}</button>
-                </div>
+                </div> */}
                 <div>
                 <button onClick={() => handleClick(index)}>code</button>
                 </div>

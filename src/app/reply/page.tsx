@@ -17,10 +17,11 @@ const PostPage = () => {
     useEffect(() => {
       const querystring = window.location.search;
       const params = new URLSearchParams(querystring)
-      const id = params.get("text")
-      setTweet_id(id)
-      console.log(id)
-    })
+      const id= params.get("text")
+      if (id) {
+        setTweet_id(String(id))
+      }
+    }, [])
     return (
         <div className="App">
         <ReTweet displayname={displayname} replyto={tweet_id} />
