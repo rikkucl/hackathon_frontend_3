@@ -4,15 +4,15 @@ import "../App.css"
 import React from 'react';
 import PostTweet  from "./Tweetfig";
 import { text } from "stream/consumers";
-import ReTweet from "../post/ReTweet";
 
 
 //Formの引数はfetch usersなので引数なし→void
 type FormProps = {
   displayname: string;
+  replyto: string;
 }
 
-export const Tweet: React.FC<FormProps> = ({displayname}) => {
+export const ReTweet: React.FC<FormProps> = ({displayname, replyto}) => {
   //name, ageをstateで管理
   //const [name, setName] = useState("");
   //const [age, setAge] = useState(0)
@@ -57,7 +57,7 @@ export const Tweet: React.FC<FormProps> = ({displayname}) => {
           code: code,
           errormessage: errorMessage,
           lang: lang,
-          ReTweet: ""
+          replyto: replyto
           //age: age,
         }),
       });
@@ -133,4 +133,4 @@ export const Tweet: React.FC<FormProps> = ({displayname}) => {
   );
 };
 
-export default Tweet;
+export default ReTweet;

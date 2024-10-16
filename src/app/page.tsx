@@ -12,6 +12,7 @@ import { collection } from "firebase/firestore";
 import PreviewImage from "./PreviewImage";
 import Link from "next/link"
 import { useAppContext } from "./context";
+import { useRouter } from "next/navigation"
 
 interface Tweet {
   id: string;
@@ -24,6 +25,7 @@ interface Tweet {
   code: string;
   errormessage: string;
   lang: string;
+  replyto: string;
 }
 
 function App() {
@@ -34,6 +36,11 @@ function App() {
   // const [displayfig, setDisplayfig] = useState<string>("")
   const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
+  const router = useRouter();
+
+  const handleNavigation = (id) => {
+    router.push("/reply?text=${id}")
+  }
   //起動時に一回だけ実行
   useEffect(() =>{
     fetchTweet()
@@ -118,7 +125,12 @@ function App() {
       <div className="status">
         <h3>Hello {displayname}</h3>
         <PreviewImage imagename={displayfig} />
-        <h3>Your Plan is {status}</h3>
+        {status ? (
+          <h3>Your Plan is {status}</h3>
+        ) : (
+          null
+        )}
+        
       </div>
       {Object.values(Tweets).map((tweet, index) =>
         <div className="tweet">
@@ -134,6 +146,14 @@ function App() {
           <div>
             {visibleItems.includes(index) && <div>{tweet.code}</div>}
           </div>
+          {/* <button onClick={() => handleNavigation(tweet.id)}>リプライ</button> */}
+          
+          <Link href={{pathname: '/reply', query: { text: tweet.id } }}>
+          リプライ
+          </Link>
+          <Link href={{pathname: '/replysite', query: { text: tweet.id}}}>
+          リプライ一覧
+          </Link>
           <PreviewImage imagename={tweet.figid}/>
         </div>
       )}

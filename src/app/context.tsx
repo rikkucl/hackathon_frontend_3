@@ -13,6 +13,7 @@ interface Tweet {
     code: string;
     errormessage: string;
     lang: string;
+    replyto: string;
 }
 interface AppContextType {
     Tweets: Tweet[];
@@ -41,7 +42,7 @@ export const useAppContext = () => useContext(AppContext)
 
 export const AppProvider = ({children}: {children: ReactNode }) => {
     const [Tweets, setTweets] = useState<Tweet[]>([]);
-    const [displayname, setDisplayname] = useState<string>("")
+    const [displayname, setDisplayname] = useState<string>("Anonymous")
     const [displayfig, setDisplayfig] = useState<string>("")
     const [status, setStatus] = useState<string>("")
     return (
