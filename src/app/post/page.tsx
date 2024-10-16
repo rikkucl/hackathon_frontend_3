@@ -6,7 +6,7 @@ import { useAppContext } from "../context";
 import Tweet from "./Tweet";
 
 const PostPage = () => {
-    const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig} = useAppContext()
+    const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
     return (
         <div className="App">
         <Tweet displayname={displayname} />

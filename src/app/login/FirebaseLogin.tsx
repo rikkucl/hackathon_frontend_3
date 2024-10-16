@@ -5,7 +5,7 @@ import { fireAuth, db } from "../firebase";
 import React, { useState, Dispatch, SetStateAction } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc, serverTimestamp, addDoc, collection, getDoc } from 'firebase/firestore';
-import Post from "./FirebaseLoginFigure"
+//import Post from "./FirebaseLoginFigure"
 
 import { isAwaitExpression } from "typescript";
 import '../App.css';
@@ -17,8 +17,9 @@ import '../App.css';
 interface Props {
     setDisplayname: (displayname: string) => void
     setDisplayfig: (displayfig: string) => void
+    setStatus: (status: string) => void
 }
-export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig}) => {
+export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig, setStatus}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginemail, setLoginemail] = useState("")
@@ -39,6 +40,7 @@ export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig}) => {
           const userData = userDoc.data();
           setDisplayname(userData.registername || "未設定")
           setDisplayfig(userData.figid || "未設定")
+          setStatus(userData.status || "未設定")
         }
         alert("ログインしました")
         //console.log(setUser_name)
@@ -60,24 +62,45 @@ export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig}) => {
     });
   };
 
-  const signUp = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    try {
-        const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
-        const user = userCredential.user
-        await setDoc(doc(db, "users", user.uid), {
-          registername: registername,
-          email: email,
-          createdAt: serverTimestamp(),
-          figid: figure_id
-        }).catch((error) => {
-          console.error("Error writting docment ", error)
-        })
-        alert("登録しました")
-    } catch (err) {
-        alert(err);
-    }
-}
+//   const signUpNormal = async (e: React.FormEvent<HTMLFormElement>) => {
+//     e.preventDefault()
+//     try {
+//         const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
+//         const user = userCredential.user
+//         await setDoc(doc(db, "users", user.uid), {
+//           registername: registername,
+//           email: email,
+//           createdAt: serverTimestamp(),
+//           figid: figure_id,
+//           status: "standard"
+//         }).catch((error) => {
+//           console.error("Error writting docment ", error)
+//         })
+//         alert("登録しました")
+//     } catch (err) {
+//         alert(err);
+//     }
+//   }
+//   const signUpPremium = async (e: React.FormEvent<HTMLFormElement>) => {
+//     e.preventDefault()
+//     try {
+//         const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
+//         const user = userCredential.user
+//         await setDoc(doc(db, "users", user.uid), {
+//           registername: registername,
+//           email: email,
+//           createdAt: serverTimestamp(),
+//           figid: figure_id,
+//           status: "premium"
+//         }).catch((error) => {
+//           console.error("Error writting docment ", error)
+//         })
+//         alert("登録しました")
+//     } catch (err) {
+//         alert(err);
+//     }
+// }
+
   
 
   return (
@@ -105,9 +128,9 @@ export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig}) => {
       </div>
       
 
-      <div className="register">
+      {/* <div className="register">
             <h5 className="action">ユーザー登録</h5>
-            <form onSubmit={signUp}>
+            <form onSubmit={signUpNormal}>
             <div className="form_block">
             <label>ユーザー名</label>
             <input name="displayname" value={registername} type="text" onChange={(e) => setRegistername(e.target.value)} style={{color: "black"}}></input>
@@ -126,8 +149,7 @@ export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig}) => {
             </div>
             <button>ユーザー登録</button>
             </form>
-        </div>
-      
+        </div> */}
     </div>
   );
 };

@@ -9,7 +9,10 @@ interface Tweet {
     liked: number;
     content: string;
     retweet: number;
-    figid: string
+    figid: string;
+    code: string;
+    errormessage: string;
+    lang: string;
 }
 interface AppContextType {
     Tweets: Tweet[];
@@ -18,6 +21,8 @@ interface AppContextType {
     setDisplayname: (displayname: string) => void;
     displayfig: string;
     setDisplayfig: (displayfig: string) => void;
+    status: string;
+    setStatus: (status: string) => void;
 }
 const defaultContextValue: AppContextType = {
     Tweets: [],
@@ -25,7 +30,9 @@ const defaultContextValue: AppContextType = {
     displayname: "",
     setDisplayname: (displayname: string) => {},
     displayfig: "",
-    setDisplayfig: (displayfig: string) => {}
+    setDisplayfig: (displayfig: string) => {},
+    status: "",
+    setStatus: (status: string) => {}
 }
 
 const AppContext = createContext<AppContextType>(defaultContextValue);
@@ -36,8 +43,9 @@ export const AppProvider = ({children}: {children: ReactNode }) => {
     const [Tweets, setTweets] = useState<Tweet[]>([]);
     const [displayname, setDisplayname] = useState<string>("")
     const [displayfig, setDisplayfig] = useState<string>("")
+    const [status, setStatus] = useState<string>("")
     return (
-        <AppContext.Provider value={{Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig}}>
+        <AppContext.Provider value={{Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus}}>
         {children}
         </AppContext.Provider>
     )

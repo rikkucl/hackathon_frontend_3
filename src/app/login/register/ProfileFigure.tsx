@@ -2,7 +2,7 @@
 import React, {useState, Dispatch,SetStateAction, ChangeEvent} from "react";
 import {ref, uploadBytes} from "firebase/storage"
 import {validateImage} from "image-validator"
-import {db, storage} from "../firebase"
+import {db, storage} from "../../firebase"
 import {addDoc, collection} from "firebase/firestore"
 
 interface Props {

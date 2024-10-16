@@ -20,7 +20,10 @@ interface Tweet {
   liked: number;
   content: string;
   retweet: number;
-  figid: string
+  figid: string;
+  code: string;
+  errormessage: string;
+  lang: string;
 }
 
 function App() {
@@ -29,7 +32,8 @@ function App() {
   // const [Tweets, setTweets] = useState<Tweet[]>([]);
   // const [displayname, setDisplayname] = useState<string>("")
   // const [displayfig, setDisplayfig] = useState<string>("")
-  const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig} = useAppContext()
+  const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
+  const [visibleItems, setVisibleItems] = useState([]);
   //起動時に一回だけ実行
   useEffect(() =>{
     fetchTweet()
@@ -83,6 +87,16 @@ function App() {
 
   }
 
+  const handleClick = (key) => {
+    setVisibleItems((prev) =>{
+      if (prev.includes(key)) {
+        return prev.filter((item) => item !== key);
+      } else {
+        return [...prev, key]
+      }
+    })
+  }
+
   return (
     //<Router>
       <div>
@@ -104,14 +118,21 @@ function App() {
       <div className="status">
         <h3>Hello {displayname}</h3>
         <PreviewImage imagename={displayfig} />
+        <h3>Your Plan is {status}</h3>
       </div>
-      {Object.values(Tweets).map(tweet =>
+      {Object.values(Tweets).map((tweet, index) =>
         <div className="tweet">
           <div className="tweetcontent">
           <h5>{tweet.name}, {tweet.content}, {tweet.date}, {tweet.liked}</h5>  
           </div>
           <div className="tweetlike">
           <button onClick={() => handlelike(tweet.id)}>いいね{tweet.liked}</button>
+          </div>
+          <div>
+            <button onClick={() => handleClick(index)}>code</button>
+          </div>
+          <div>
+            {visibleItems.includes(index) && <div>{tweet.code}</div>}
           </div>
           <PreviewImage imagename={tweet.figid}/>
         </div>
@@ -121,6 +142,9 @@ function App() {
       </Link>
       <Link href="./post">
       投稿
+      </Link>
+      <Link href="./search">
+      検索
       </Link>
       </div>
       {/* <div className="App"> */}

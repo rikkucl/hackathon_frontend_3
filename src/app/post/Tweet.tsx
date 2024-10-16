@@ -3,6 +3,7 @@ import { useState } from "react";
 import "../App.css"
 import React from 'react';
 import PostTweet  from "./Tweetfig";
+import { text } from "stream/consumers";
 
 
 //Formの引数はfetch usersなので引数なし→void
@@ -17,6 +18,9 @@ export const Tweet: React.FC<FormProps> = ({displayname}) => {
   const [tweet, setTweet] = useState("")
   //送る時は app 関数になくても問題ない
   const [tweetfig, setTweetfig] = useState("") 
+  const [code, setCode] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const [lang, setLang]= useState("")
   //Formをsubmitしたら発火する関数
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,8 +52,10 @@ export const Tweet: React.FC<FormProps> = ({displayname}) => {
           content: tweet,
           like: 0,
           retweet: 0,
-          figid: tweetfig
-
+          figid: tweetfig,
+          code: code,
+          errormessage: errorMessage,
+          lang: lang
           //age: age,
         }),
       });
@@ -79,6 +85,36 @@ export const Tweet: React.FC<FormProps> = ({displayname}) => {
         onChange={(e) => setTweet(e.target.value)}
         style={{color: "black", border: "1px solid black"}}
       ></input></div>
+      <div className="code">
+        <label><h3>code: </h3></label>
+        <input
+        type="text"
+        value={code}
+        onChange={(e) => setCode(e.target.value)}
+        style={{color: "black", border: "1px solid black"}}
+        >
+        </input></div>
+      <div className="tweet_submit">
+        <label><h3>error message:</h3></label>
+        <input
+        type="text"
+        value={errorMessage}
+        onChange={(e) => setErrorMessage(e.target.value)}
+        style={{color: "black", border: "1px solid black"}}
+        ></input>
+      </div>
+      <div className="tweet_submit">
+        <label><h3>language</h3></label>
+        <select
+        value={lang}
+        onChange={(e) => setLang(e.target.value)}
+        >
+          <option value="">選択してください</option>
+          <option value="Python">Python</option>
+          <option value="JavaScript">JavaScript</option>
+          <option value="Go">Go</option>
+        </select>
+      </div>
       <PostTweet setTweetfig={setTweetfig} />
       
       {/* <div className="form_group">
