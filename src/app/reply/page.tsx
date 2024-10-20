@@ -1,10 +1,10 @@
 "use client"
 import Link from "next/link";
 import React from "react";
-import PreviewImage from "../PreviewImage";
+import PreviewImage from "../lib/PreviewImage";
 import { useAppContext } from "../context";
 import ReTweet from "./ReTweet";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState, useEffect} from "react"
 
 interface QueryParams {
@@ -13,6 +13,7 @@ interface QueryParams {
 const PostPage = () => {
     const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
     const [tweet_id, setTweet_id] = useState<string>("")
+    const router = useRouter();
 
     useEffect(() => {
       const querystring = window.location.search;
@@ -24,7 +25,7 @@ const PostPage = () => {
     }, [])
     return (
         <div className="App">
-        <ReTweet displayname={displayname} replyto={tweet_id} />
+        <ReTweet router={router} displayname={displayname} replyto={tweet_id} />
         <Link href={{pathname: "../"}}>
         閲覧画面
         </Link>

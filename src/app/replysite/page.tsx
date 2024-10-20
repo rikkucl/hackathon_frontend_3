@@ -1,8 +1,9 @@
 "use client"
 import { useAppContext } from "../context";
 import { useState,useEffect } from "react"
+import React from "react";
 import Link from "next/link"
-import PreviewImage from "../PreviewImage"
+import PreviewImage from "../lib/PreviewImage"
 
 
 interface Tweet {
@@ -68,7 +69,7 @@ const Replypage = () => {
             </div>  
         )
     )}
-    <Link href= "../">
+    <Link href= "../view">
     閲覧画面
     </Link>
     </div>

@@ -1,31 +1,34 @@
 "use client"
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 // import { auth } from "./firebase";
-import { fireAuth, db } from "../firebase";
+import { fireAuth, db } from "./lib/firebase";
 import React, { useState, Dispatch, SetStateAction } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc, serverTimestamp, addDoc, collection, getDoc } from 'firebase/firestore';
 //import Post from "./FirebaseLoginFigure"
+// import { useRouter } from "next/navigation"
 
 import { isAwaitExpression } from "typescript";
-import '../App.css';
+import './App.css';
 
 // interface Props {
 //     setDisplayname: Dispatch<SetStateAction<string>>
 //     setDisplayfig: Dispatch<SetStateAction<string>>
 // }
 interface Props {
+    router: any
     setDisplayname: (displayname: string) => void
     setDisplayfig: (displayfig: string) => void
     setStatus: (status: string) => void
 }
-export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig, setStatus}) => {
+export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfig, setStatus}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginemail, setLoginemail] = useState("")
   const [loginpassword, setLoginpassword] = useState("")
   const [registername, setRegistername] = useState("")
   const [figure_id, setFigure_id] = useState("")
+
   /**
    * googleでログインする
    */
@@ -42,7 +45,16 @@ export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig, setSt
           setDisplayfig(userData.figid || "未設定")
           setStatus(userData.status || "未設定")
         }
-        alert("ログインしました")
+        router.push('./view')
+        // console.log("login")
+        // alert("ログインしました")
+        // try {
+        //   router.push('./view')
+        // }
+        // catch (error) {
+        //   alert("cannot router")
+        // }
+        
         //console.log(setUser_name)
         //setUser_name(loginemail)
         //setUser_name("riku")
@@ -120,13 +132,13 @@ export const LoginForm: React.FC<Props> = ({setDisplayname, setDisplayfig, setSt
       </form>
       </div>
 
-      <div className="logout">
+      {/* <div className="logout">
         <h5 className="action">ログアウト</h5>
       <button onClick={signOutfromfire}>
       ログアウト
       </button>
       </div>
-      
+       */}
 
       {/* <div className="register">
             <h5 className="action">ユーザー登録</h5>

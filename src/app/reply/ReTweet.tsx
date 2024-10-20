@@ -8,11 +8,12 @@ import { text } from "stream/consumers";
 
 //Formの引数はfetch usersなので引数なし→void
 type FormProps = {
+  router: any
   displayname: string;
   replyto: string;
 }
 
-export const ReTweet: React.FC<FormProps> = ({displayname, replyto}) => {
+export const ReTweet: React.FC<FormProps> = ({router, displayname, replyto}) => {
   //name, ageをstateで管理
   //const [name, setName] = useState("");
   //const [age, setAge] = useState(0)
@@ -69,6 +70,7 @@ export const ReTweet: React.FC<FormProps> = ({displayname, replyto}) => {
       // setAge(0);
       setTweet("")
       setTweetfig("")
+      router.push("../view")
       //fetchUsersを呼ぶ
     } catch (err) {
       console.error(err);

@@ -42,7 +42,7 @@
 import React, { Children } from 'react';
 import { AppProvider } from './context';
 import { useAppContext } from './context';
-import PreviewImage from './PreviewImage';
+import PreviewImage from './lib/PreviewImage';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
@@ -56,9 +56,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <h1>Welcome</h1>
           </header>
           <main>{children}</main>
-          <footer>
+          {/* <footer>
             <p>© 2024 My Next.js App</p>
-          </footer>
+          </footer> */}
         </body>
       </html>
     </AppProvider>

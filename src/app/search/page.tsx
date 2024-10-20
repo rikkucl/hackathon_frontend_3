@@ -52,7 +52,7 @@ const SearchPage = () => {
             </div>
         )
     )}
-    <Link href={{pathname: "../"}}>
+    <Link href={{pathname: "../view"}}>
     投稿
     </Link>
     </div>
