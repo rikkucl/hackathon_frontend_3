@@ -12,6 +12,8 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+/* @import "~@fortawesome/fontawesome-free/css/all.css"; */
+
 
 .App-header {
   background-color: #282c34;
@@ -79,14 +81,14 @@ label {
   width: 150px;
 }
 
-button {
+/* button {
   display: flex;
   width: 100px;
   height: 3em;
   align-items: center;
   justify-content: center;
   margin-top: 30px;
-}
+} */
 /* 
 .app {
   display: flex;
@@ -103,36 +105,58 @@ button {
 .tweet {
   border: 2px solid #000000;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  /* align-items: flex-start; */
   /* justify-content: ;  */
   border-color: lightsteelblue;
   width: 100%;
   /* margin: auto; */
   margin-bottom: 10px;
 }
-.tweet_user {
+/* .tweet_user {
   display: flex;
-  /* flex-direction: row; */
   justify-content: start;
   margin-right: auto;
-  /* border: 2px solid #000000; */
-}
+} */
 
 .tweet_all {
-  margin-left: 30px;
+  margin-left: 10px;
   width: 100%;
 }
-.user {
-  margin-right: auto;
+
+.tweet_user {
+  margin-right: 30px;
   margin-bottom: 10px;
   margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.tweet_user div {
+
+.twitter_profile {
+  color: inherit;
+  text-decoration: none;
+}
+
+.user div {
+  margin-left: 0px;
+  margin-right: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
+  /* background-color: #61dafb; */
+}
+
+.user_fig {
+  margin-right: 0;
+  margin-left: 0;
+  /* background-color: #282c34; */
+}
+
+/* .tweet_user div {
   margin-right: 30px;
   display: flex;
   justify-content: center;
-}
+} */
 .tweetdate {
   margin: auto;
 }
@@ -149,18 +173,52 @@ button {
   width: 90%;
   height: auto;
   border:2px solid #000000;
+  display: flex;
 }
 
+/* .tweet_like {
+  display: flex;
+  flex-direction: column;
+  background-color: aqua;
+} */
+
+.tweet_like {
+  /* padding: 8px, 24px; */
+  margin: 0px, 0px;
+  line-height: 1;
+  font-size: 16px;
+  height: 50px;
+  border: none;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+}
+.like_icon {
+  margin-top: 9px;
+}
+.like_number {
+  margin-top: 3px;
+}
 .tweetoption {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  /* align-items: center; */
   justify-content: center;
   margin-right: auto;
 }
 
 .tweetoption div {
+  display: flex;
+  /* justify-content: center; */
   margin-right: 30px;
+}
+
+.tweetreply {
+  margin-top: 10px;
+}
+
+.tweetretweet {
+  margin-top: 10px;
 }
 
 
@@ -168,20 +226,82 @@ button {
   border-color: black;
 }
 
-.login_page {
-  position: absolute;
+.user_profile {
+  position: fixed;
   left: 5%;
-  top: 40%;
+  top: 10%;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
 }
 
+.user_profile div {
+  margin-right: 5px;
+}
+
+.view_page {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
+  left: 5%;
+  top: 30%;
+  display: flex;
+  flex-direction: column;
+}
 .post_page {
-  position: absolute;
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
+  left: 5%;
+  top: 40%;
+  display: flex;
+  flex-direction: column;
+}
+
+.search_page {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
   left: 5%;
   top: 50%;
 }
 
-.search_page {
-  position: absolute;
+.profile_page {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
   left: 5%;
   top: 60%;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  }
+
+.profileheader {
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+}
+.profilename {
+  display: flex;
+  flex-direction: row;
+}
+.profilefollow {
+  display: flex;
+  flex-direction: row;
+}
+
+.profilecontent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: auto;
+  /* flex-grow: 1; */
+  padding: 19px;
 }

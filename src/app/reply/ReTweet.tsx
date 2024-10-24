@@ -58,7 +58,10 @@ export const ReTweet: React.FC<FormProps> = ({router, displayname, replyto}) => 
           code: code,
           errormessage: errorMessage,
           lang: lang,
-          replyto: replyto
+          replyto: replyto,
+          replynumber: 0,
+          retweetto: "",
+          retweetcomment:""
           //age: age,
         }),
       });

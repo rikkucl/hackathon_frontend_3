@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 
 const Loginpage = () => {
-    const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
+    const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext()
     const router = useRouter();
     return (
         <div className="App">
@@ -19,7 +19,7 @@ const Loginpage = () => {
         {/* <Link href={{pathname: "./view"}}>
         閲覧画面
         </Link> */}
-        <Link href={{pathname: "/login"}} >
+        <Link href={{pathname: "/register"}} >
         ユーザー登録
         </Link>
         </header>

@@ -3,6 +3,8 @@ import { getDownloadURL, ref, StorageReference } from "firebase/storage";
 import React, { useState, useEffect} from "react";
 import { storage } from "./firebase"
 import { promises } from "dns";
+import { getDocs, query, collection, where } from "firebase/firestore";
+import { db } from "./firebase";
 
 
 // export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => {
@@ -53,12 +55,38 @@ import { promises } from "dns";
 // }
 
 
-export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => {
+export const PreviewImageFromUser: React.FC<{ tweetname: string }> = ({ tweetname }) => {
     const [prevUrl, setPrevUrl] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [imageLoaded, setImageLoaded] = useState(false)
+    const [imagename, setImagename] = useState<string>("")
+    // useEffect(() => {
+    //     console.log("tweetname", tweetname)
+    //     FetchProfileFig(tweetname)
+    //     // console.log(imagename)
+    //     console.log("reading...", imagename)
+    //     if (imagename=="") {
+    //         setImageLoaded(false)
+    //     } else {
+    //     const getImageUrl = async (imageRef: StorageReference) => {
+    //         try {
+    //             const url = await getDownloadURL(imageRef);
+    //             setPrevUrl(url);
+    //         } catch (e) {
+    //             setError(`${e}`);
+    //         }
+    //     };
+    //     //const imageRef = ref(storage, "/images/1728983020809_無題.png")
+    //     const imageRef = ref(storage, "images/"+imagename);
+    //     getImageUrl(imageRef);
+    //     setImageLoaded(true)
+    // }
+    // }, [tweetname]);
     useEffect(() => {
-        console.log("previewing ", imagename)
+        FetchProfileFig(tweetname);
+    }, [tweetname]);
+
+    useEffect(() => {
         if (imagename=="") {
             setImageLoaded(false)
         } else {
@@ -76,8 +104,31 @@ export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => 
         setImageLoaded(true)
     }
     }, [imagename]);
+
+
+    //ツイートの名前からプロフィール画像をとって来る
+    const FetchProfileFig = async (tweetname: string) => {
+        try {
+            console.log(tweetname)
+            const userDoc = await getDocs(query(collection(db, "users"), where("registername", "==", tweetname)));
+            // const userDoc = await getDocs(collection(db, "users"));
+            //console.log(userDoc)
+            if (!userDoc.empty) {
+                const doc = userDoc.docs[0]
+                const userData = doc.data()
+                const fig: string = userData.figid
+                setImagename(fig)
+            } else {
+                console.log("userfigid is empty")
+                setImagename("")
+            }
+            } catch(error) {
+            console.error("error happened", error)
+            }
+        }
+  
     return (
-        <div>
+        <div >
             {/* {imageLoaded ? (
                 <div
                 style={{
@@ -110,7 +161,7 @@ export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => 
                         <img
                         src={prevUrl}
                         alt={"error"}
-                        style={{ height: 100, width: 100, borderRadius: "50%", border:"2px solid black", objectFit: "cover"}}
+                        style={{ height: 50, width: 50, borderRadius: "50%", border:"2px solid black", objectFit: "cover"}}
                         />
                         ) :(
                             <p>No image</p>
@@ -124,4 +175,4 @@ export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => 
     </div>
     )
 }
-export default PreviewImage;
+export default PreviewImageFromUser;

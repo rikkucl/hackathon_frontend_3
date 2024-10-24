@@ -25,7 +25,7 @@ const PostPage = () => {
     }, [])
     return (
         <div className="App">
-        <ReTweet router={router} displayname={displayname} replyto={tweet_id} />
+        <ReTweet router={router} retweetto={tweet_id} />
         <Link href={{pathname: "../"}}>
         閲覧画面
         </Link>

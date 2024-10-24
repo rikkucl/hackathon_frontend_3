@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation"
 import { register } from "module";
 
 const RegisterPage = () => {
-  const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus} = useAppContext()
+  const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [registername, setRegistername] = useState("")

@@ -14,6 +14,17 @@ interface Tweet {
     errormessage: string;
     lang: string;
     replyto: string;
+    replynumber: number;
+    retweetto: string;
+    retweetcomment: string
+}
+interface Followreq {
+    followerreq: string;
+    followedreq: string
+}
+interface Follow {
+    follower: string;
+    followed: string
 }
 interface AppContextType {
     Tweets: Tweet[];
@@ -24,6 +35,10 @@ interface AppContextType {
     setDisplayfig: (displayfig: string) => void;
     status: string;
     setStatus: (status: string) => void;
+    followreqs: Followreq[];
+    setFollowreqs: (followreqs: Followreq[]) => void;
+    follows: Follow[];
+    setFollows: (follows: Follow[]) => void
 }
 const defaultContextValue: AppContextType = {
     Tweets: [],
@@ -33,7 +48,11 @@ const defaultContextValue: AppContextType = {
     displayfig: "",
     setDisplayfig: (displayfig: string) => {},
     status: "",
-    setStatus: (status: string) => {}
+    setStatus: (status: string) => {},
+    followreqs: [],
+    setFollowreqs: (followreqs: Followreq[]) => {},
+    follows: [],
+    setFollows: (follows: Follow[]) => {}
 }
 
 const AppContext = createContext<AppContextType>(defaultContextValue);
@@ -45,8 +64,10 @@ export const AppProvider = ({children}: {children: ReactNode }) => {
     const [displayname, setDisplayname] = useState<string>("Anonymous")
     const [displayfig, setDisplayfig] = useState<string>("")
     const [status, setStatus] = useState<string>("")
+    const [followreqs, setFollowreqs] = useState<Followreq[]>([])
+    const [follows, setFollows] = useState<Follow[]>([])
     return (
-        <AppContext.Provider value={{Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus}}>
+        <AppContext.Provider value={{Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows}}>
         {children}
         </AppContext.Provider>
     )

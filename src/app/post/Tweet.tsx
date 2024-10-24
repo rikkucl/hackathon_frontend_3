@@ -58,7 +58,9 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
           code: code,
           errormessage: errorMessage,
           lang: lang,
-          ReTweet: ""
+          ReTweet: "",
+          replynumber: 0,
+          retweetto: 0
           //age: age,
         }),
       });

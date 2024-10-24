@@ -52,9 +52,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <title>Assembly For Engineer</title>
         </head>
         <body>
-          <header>
+          {/* <header>
             <h1>Welcome</h1>
-          </header>
+          </header> */}
           <main>{children}</main>
           {/* <footer>
             <p>© 2024 My Next.js App</p>
