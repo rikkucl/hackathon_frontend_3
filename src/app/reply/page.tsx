@@ -52,7 +52,6 @@ const PostPage = () => {
       const id= params.get("text")
       if (id) {
         setTweet_id(String(id))
-        findTweet(tweet_id)
       }
     }, [])
     useEffect(() => {
@@ -80,20 +79,10 @@ const PostPage = () => {
         console.log("error happened", err)
       }
     }
-    const findTweet = (id: string) => {
-      const foundTweet = Tweets.find(tweet => tweet.id === tweet_id)
-      if (foundTweet) {
-        console.log("found tweet")
-        setTweet(foundTweet)
-      } else {
-        console.log("cannot find tweet")
-      }
-    }
-
 
     return (
         <div className="App">
-        <ReTweet router={router} replyto={tweet_id} tweetto={tweet} />
+        <ReTweet router={router} tweetto_id={tweet_id} />
         <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>

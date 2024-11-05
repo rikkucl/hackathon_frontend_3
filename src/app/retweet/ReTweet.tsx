@@ -7,6 +7,17 @@ import { text } from "stream/consumers";
 import { useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { useAppContext } from "../context";
+import Link from "next/link";
+import PreviewImageFromUser from "../lib/PreviewImageFromUser";
+import PreviewImage from "../lib/PreviewImage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faComment } from "@fortawesome/free-solid-svg-icons";
+import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
+import { faRetweet } from "@fortawesome/free-solid-svg-icons";
+import { faHouse} from "@fortawesome/free-solid-svg-icons";
 
 
 
@@ -45,6 +56,7 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   const [lang, setLang]= useState("")
   const [retweetcomment, setRetweetcomment] = useState("")
   const [user_id, setUser_id] = useState<string>("")
+  const [tweetto, setTweetto] = useState<Tweet>({id: "", name: "", date: "", liked: 0, content: "", retweet: 0, figid: "", code: "", errormessage: "", lang: "", replyto: "", replynumber: 0, retweetto: "", retweetcomment: ""})
   //Formをsubmitしたら発火する関数
   useEffect(() => {
     const auth = getAuth();
@@ -57,6 +69,39 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
       console.log("cannot find user")
     }
   })
+  useEffect (() => {
+    findTweet(retweetto)
+  })
+  
+  const findTweet = (id: string) => {
+    const foundTweet: Tweet|undefined = Tweets.find(tweet => tweet.id === id)
+    if (foundTweet !== undefined) {
+      // console.log("found tweet")
+      setTweetto(foundTweet)
+    } else {
+      console.log("error")
+    }
+  }
+  const handlelike = async (id: string) => {
+    try {
+      const response = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/like", 
+        {
+          method: "POST",
+          // headers: {
+          //   'Content-Type': "application/json",
+          // },
+          body: JSON.stringify({
+            tweet_id: id,
+            user_id: user_id,
+          }),
+        })
+        // fetchTweet()
+    }catch (err){
+      console.log(err)
+    }
+  }
+
 
   const RetweetWithComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -102,24 +147,79 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   };
 
   return (
-    <div>
-    <form style={{ display: "flex", flexDirection: "column" , alignItems: "center"}} onSubmit={RetweetWithComment}>
-      <div className="retweeet_comment">
-      <label><h3>comment: </h3></label>
-      <input
-        //type="text"
-        value={retweetcomment}
-        onChange={(e) => setRetweetcomment(e.target.value)}
-        style={{color: "black", border: "1px solid black"}}
-      ></input></div>
-      <div className="form_group">
-      <button className="button" type={"submit"}><h3>Retweet with comment</h3></button></div>
-    </form>
-    <form onSubmit={RetweetWithComment}>
-      <div className="retweet">
-      <button className="button" type={"submit"}><h3>Retweet with comment</h3></button>
+    <div className="post_retweet">
+      <div className="retweet_title">
+        Retweet
       </div>
-    </form>
+    <div className="tweet">
+          <div className="user_fig">
+            <Link href={{pathname: "/profile", query: {text: tweetto?.name} }} className="twitter_profile">
+            <PreviewImageFromUser tweetname={tweetto.name} />
+            </Link>
+          </div>
+          <div className="tweet_all">
+            <div className="tweet_user">
+              <Link href={{pathname: "/profile", query: {text: tweetto?.name} }} className="twitter_profile">
+              {tweetto?.name}              
+              </Link>
+              <div className="tweetdate">
+              {tweetto.date}
+            </div>
+            </div> 
+          <Link href={{pathname: "replysite", query: {text: tweetto.id}}} className="customLink">
+            <div className="tweetcontent">
+            <h5>{tweetto.content}</h5>  
+            </div>
+            </Link> 
+            <div className="tweetoption">
+            <div className="tweetlike">
+                <button onClick={() => handlelike(tweetto.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} />
+                  </div>
+                  <div className="like_number">
+                  {tweetto.liked}
+                  </div>
+                  </button>
+                </div>
+              <div className="tweetreply">
+              <Link href={{pathname: '/reply', query: { text: tweetto.id } }} className="customLink">
+              <div>
+                <FontAwesomeIcon icon={faComment} />
+              </div>
+              <div>
+                {tweetto.replynumber}
+              </div>
+              </Link>
+              </div>
+              <div className="tweetretweet">
+              <Link href={{pathname: '/retweet', query: { text: tweetto.id } }} className="customLink">
+              <div>
+               <FontAwesomeIcon icon={faRetweet}/>
+              </div>
+              <div>
+                {tweetto.retweet}
+              </div>
+              </Link>
+              </div>
+              <div className="tweetreply">
+              </div>
+            </div>
+            <PreviewImage imagename={tweetto.figid}/>
+            </div>
+        </div>
+        <form style={{ display: "flex", flexDirection: "column" , alignItems: "center"}} onSubmit={RetweetWithComment}>
+        <div className="retweeet_comment">
+        <label><h3>comment: </h3></label>
+        <input
+          //type="text"
+          value={retweetcomment}
+          onChange={(e) => setRetweetcomment(e.target.value)}
+          style={{color: "black", border: "1px solid black"}}
+        ></input></div>
+        <div className="form_group">
+        <button className="button" type={"submit"}><h3>Retweet</h3></button></div>
+      </form>
     </div>
   );
 };

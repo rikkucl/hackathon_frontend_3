@@ -26,8 +26,7 @@ import { faHouse} from "@fortawesome/free-solid-svg-icons";
 //Formの引数はfetch usersなので引数なし→void
 type FormProps = {
   router: any
-  replyto: string;
-  tweetto: Tweet;
+  tweetto_id: string;
 }
 
 interface Tweet {
@@ -47,7 +46,7 @@ interface Tweet {
   retweetcomment: string;
 }
 
-export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
+export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) => {
   //name, ageをstateで管理
   //const [name, setName] = useState("");
   //const [age, setAge] = useState(0)
@@ -59,6 +58,7 @@ export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
   const [errorMessage, setErrorMessage] = useState("")
   const [lang, setLang]= useState("")
   const [displayId, setDisplayId] = useState<string>("")
+  const [tweetto, setTweetto] = useState<Tweet>({id: "", name: "", date: "", liked: 0, content: "", retweet: 0, figid: "", code: "", errormessage: "", lang: "", replyto: "", replynumber: 0, retweetto: "", retweetcomment: ""})
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser
@@ -70,6 +70,19 @@ export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
       console.log("cannot find user")
     }
   })
+  useEffect (() => {
+    findTweet(tweetto_id)
+  })
+  
+  const findTweet = (id: string) => {
+    const foundTweet: Tweet|undefined = Tweets.find(tweet => tweet.id === id)
+    if (foundTweet !== undefined) {
+      // console.log("found tweet")
+      setTweetto(foundTweet)
+    } else {
+      console.log("error")
+    }
+  }
   const fetchUser = async (uid: string) => {
     try {
       const userDoc = await getDoc(doc(db, "users", uid));
@@ -87,6 +100,9 @@ export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
   //Formをsubmitしたら発火する関数
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+
+
     if (!tweet) {
       alert("tweet is empty");
       return;
@@ -95,15 +111,6 @@ export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
      alert("too long") 
     }
 
-    // if (name.length > 50) {
-    //   alert("Please enter a name shorter than 50 characters");
-    //   return;
-    // }
-
-    // if (age < 20 || age > 80) {
-    //   alert("Please enter age between 20 and 80");
-    //   return;
-    // }
 
     try {
       const result = await fetch(
@@ -119,7 +126,7 @@ export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
           code: code,
           errormessage: errorMessage,
           lang: lang,
-          replyto: replyto,
+          replyto: tweetto_id,
           replynumber: 0,
           retweetto: "",
           retweetcomment:""
@@ -168,14 +175,14 @@ export const ReTweet: React.FC<FormProps> = ({router, replyto, tweetto}) => {
       </div>
     <div className="tweet">
           <div className="user_fig">
-            <Link href={{pathname: "/profile", query: {text: tweetto.name} }} className="twitter_profile">
+            <Link href={{pathname: "/profile", query: {text: tweetto?.name} }} className="twitter_profile">
             <PreviewImageFromUser tweetname={tweetto.name} />
             </Link>
           </div>
           <div className="tweet_all">
             <div className="tweet_user">
-              <Link href={{pathname: "/profile", query: {text: tweetto.name} }} className="twitter_profile">
-              {tweetto.name}              
+              <Link href={{pathname: "/profile", query: {text: tweetto?.name} }} className="twitter_profile">
+              {tweetto?.name}              
               </Link>
               <div className="tweetdate">
               {tweetto.date}

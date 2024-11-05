@@ -64,6 +64,14 @@ const PostPage = () => {
     return (
         <div className="App">
         <ReTweet router={router} retweetto={tweet_id} />
+        <div className="user_profile">
+        <div>
+          <PreviewImage imagename={displayfig}></PreviewImage>
+        </div>
+        <div>
+          {displayname}
+        </div>
+      </div>
         <Link href="./view" className="view_page">
       <div>
         <FontAwesomeIcon icon={faHouse}/>
