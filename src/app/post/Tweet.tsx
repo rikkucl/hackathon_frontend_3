@@ -3,6 +3,9 @@ import { useState } from "react";
 import "../App.css"
 import React from 'react';
 import PostTweet  from "./Tweetfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect } from "react";
+import { getAuth } from "firebase/auth";
 import { text } from "stream/consumers";
 import ReTweet from "../reply/ReTweet";
 
@@ -10,10 +13,9 @@ import ReTweet from "../reply/ReTweet";
 //Formの引数はfetch usersなので引数なし→void
 type FormProps = {
   router: any;
-  displayname: string;
 }
 
-export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
+export const Tweet: React.FC<FormProps> = ({router}) => {
   //name, ageをstateで管理
   //const [name, setName] = useState("");
   //const [age, setAge] = useState(0)
@@ -23,7 +25,35 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
   const [code, setCode] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
   const [lang, setLang]= useState("")
+  const [userid, setUserid] = useState<string>("")
+
   //Formをsubmitしたら発火する関数
+  // useEffect(() => {
+  //   const auth = getAuth();
+  //   const user = auth.currentUser
+  //   if (user) {
+  //     const uid = user.uid
+  //     setUserid(uid)
+  //     console.log("userid id", uid)
+  //   } else {
+  //     console.log("cannot find user")
+  //   }
+  // },[])
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserid(user.uid);
+        console.log("userid id", user.uid);
+      } else {
+        console.log("cannot find user");
+      }
+    });
+  
+    // クリーンアップ関数を返す
+    return () => unsubscribe();
+  }, []);
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!tweet) {
@@ -33,6 +63,7 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
     else if (tweet.length > 140) {
      alert("too long") 
     }
+
 
     // if (name.length > 50) {
     //   alert("Please enter a name shorter than 50 characters");
@@ -50,7 +81,7 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
         {
         method: "POST",
         body: JSON.stringify({
-          name: displayname,
+          name: userid,
           content: tweet,
           like: 0,
           retweet: 0,
@@ -81,33 +112,36 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
 
 
   return (
-    <div>
-    <form style={{ display: "flex", flexDirection: "column" , alignItems: "center"}} onSubmit={onSubmit}>
-      <div className="tweeet_submit">
+    <div className="post">
+      <div className="tweet_title">
+        Tweet
+        {/* user id is{userid} */}
+      </div>
+    <form onSubmit={onSubmit} className="tweet_post">
+      <div className="tweet_submit">
       <label><h3>tweet: </h3></label>
-      <input
+      <textarea
         //type="text"
         value={tweet}
         onChange={(e) => setTweet(e.target.value)}
-        style={{color: "black", border: "1px solid black"}}
-      ></input></div>
-      <div className="code">
+        placeholder="Hello neko!!"
+        style={{color: "black", border: "1px solid black", width: "300px", height:"100px"}}
+      ></textarea></div>
+      <div className="post_code">
         <label><h3>code: </h3></label>
-        <input
-        type="text"
+        <textarea
         value={code}
         onChange={(e) => setCode(e.target.value)}
-        style={{color: "black", border: "1px solid black"}}
+        placeholder="print('Hello World!')"
+        style={{color: "black", border: "1px solid black", width: "300px", height:"80px"}}
         >
-        </input></div>
-      <div className="tweet_submit">
+        </textarea>
         <label><h3>error message:</h3></label>
-        <input
-        type="text"
+        <textarea
         value={errorMessage}
         onChange={(e) => setErrorMessage(e.target.value)}
-        style={{color: "black", border: "1px solid black"}}
-        ></input>
+        style={{color: "black", border: "1px solid black", width: "300px", height:"80px"}}
+        ></textarea>
       </div>
       <div className="tweet_submit">
         <label><h3>language</h3></label>
@@ -121,6 +155,7 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
           <option value="Go">Go</option>
         </select>
       </div>
+      <label>Picture</label>
       <PostTweet setTweetfig={setTweetfig} />
       
       {/* <div className="form_group">
@@ -131,7 +166,7 @@ export const Tweet: React.FC<FormProps> = ({router, displayname}) => {
         onChange={(e) => setAge(parseInt(e.target.value))}
         ></input></div> */}
       <div className="form_group">
-      <button className="button" type={"submit"}><h3>POST</h3></button></div>
+      <button className="submit-button" type={"submit"}><h3>POST</h3></button></div>
     </form>
     </div>
   );

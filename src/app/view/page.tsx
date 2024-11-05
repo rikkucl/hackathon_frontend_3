@@ -24,6 +24,8 @@ import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 import { faHouse} from "@fortawesome/free-solid-svg-icons";
 import firebase from "firebase/compat/app";
+import Tweet from "../post/Tweet";
+import ReTweet from "../reply/ReTweet";
 
 interface Tweet {
   id: string;
@@ -40,6 +42,8 @@ interface Tweet {
   replynumber: number;
   retweetto: string;
   retweetcomment: string;
+  username?: string;
+  retweettoname?: string
 }
 
 function App() {
@@ -51,17 +55,17 @@ function App() {
   const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext()
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
   const [fid, setFig] = useState<string>("")
+  const [user_Id, setUser_id] = useState<string>("")
+  const [userNames, setUsernames] = useState<Tweet[]>([])
   const router = useRouter();
 
-  const handleNavigation = (id: string) => {
-    router.push("/reply?text=${id}")
-  }
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser
     if (user) {
       const uid = user.uid
       fetchUser(uid)
+      setUser_id(uid)
     } else {
       console.log("cannot find user")
     }
@@ -82,7 +86,7 @@ function App() {
         setDisplayfig(userDoc.data().figid)
         setDisplayname(userDoc.data().registername)
       } else {
-        console.log("userfigid is not defined")
+        // console.log("userfigid is not defined")
         setDisplayfig("")
       }
     } catch (err) {
@@ -126,7 +130,7 @@ function App() {
           // },
           body: JSON.stringify({
             tweet_id: id,
-            user_id: displayname,
+            user_id: user_Id,
           }),
         })
         fetchTweet()
@@ -145,6 +149,78 @@ function App() {
     })
   }
 
+  const handlegemini = async (id: string) => {
+    const tweet = Tweets.find(tweet => tweet.id === id)
+    if (tweet !== undefined) {
+      if (tweet.code === "" || tweet.errormessage === "" || tweet.lang === "") {
+        alert("You are not post code or console or language")
+        return
+      }
+      try {
+        const response = await fetch(
+          "https://hackathon-backend-1012715555694.us-central1.run.app/gemini", 
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "",
+              cotent: tweet.content,
+              like: 0,
+              retweet: 0,
+              figid: "",
+              code: tweet.code,
+              errormessage: tweet.errormessage,
+              lang: tweet.lang,
+              replyto: tweet.id,
+              replynumber: 0,
+              retweetto: "",
+              retweetcomment: "",
+            })
+          })
+          if (!response.ok) {
+            throw Error("Failed to POST")
+          }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+  }
+
+  const executeOnGemini = async (id: string) => {
+    const tweet = Tweets.find(tweet => tweet.id === id)
+    if (tweet !== undefined) {
+      if (tweet.code === "" || tweet.lang === "") {
+        alert("You are not post code or console or language")
+        return
+      }
+      try {
+        const response = await fetch(
+          "https://hackathon-backend-1012715555694.us-central1.run.app/execute",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "",
+              cotent: tweet.content,
+              like: 0,
+              retweet: 0,
+              figid: "",
+              code: tweet.code,
+              errormessage: tweet.errormessage,
+              lang: tweet.lang,
+              replyto: tweet.id,
+              replynumber: 0,
+              retweetto: "",
+              retweetcomment: "",
+            })
+          })
+          if (!response.ok) {
+            throw Error("Failed to POST")
+          }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+  }
+
   const ConvertFromIdToName = (id: string) => {
     const TweetFiltered: Tweet| undefined = Tweets.find(tweet => tweet.id === id)
     if (TweetFiltered !== undefined) {
@@ -153,13 +229,56 @@ function App() {
       return ""
     }
   }
+  const fetchNamesFromTweets = async (Objects: Tweet[]) => {
+    const names = await Promise.all(
+      Objects.map(async (tweet) => {
+        // console.log("tweet.name", tweet.name)
+        if (tweet.retweetto === ""){
+          const name = await fetchName(tweet.name);
+          return { ...tweet, username: name}
+        }
+        else {
+          const name = await fetchName(tweet.name);
+          const retweettoname = await fetchName(ConvertFromIdToName(tweet.retweetto))
+          console.log("tweet.retweetto is",tweet.retweetto)
+          console.log("retweettoname is",retweettoname)
+          return { ...tweet, username: name, retweettoname: retweettoname}
+        }
+      })
+    )
+    return names;
+  }
+  useEffect(() => {
+    const getUserData = async () => {
+      const data = await fetchNamesFromTweets(Tweets)
+      setUsernames(data)
+    }
+    getUserData();
+  }, [Tweets])
 
+  const fetchName = async (uid: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      console.log(uid)
+      if (userDoc.exists()) {
+        return userDoc.data().registername
+      } else {
+        console.log("do not exists userDoc")
+        return ""
+      }
+    } catch (err) {
+      // console.log(uid)
+      console.log("error happened", err)
+      return ""
+    }
+  }
   return (
     //<Router>
       <div>
       <div className="app">
       <div className="user_container">
-      {Object.values(Tweets).map((tweet, index) =>
+      <div className="scroll">
+      {Object.values(userNames).map((tweet, index) =>
         tweet.retweetto === "" ? (
           <div className="tweet">
           <div className="user_fig">
@@ -169,13 +288,17 @@ function App() {
           </div>
           <div className="tweet_all">
             <div className="tweet_user">
-              <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
-              {tweet.name}              
-              </Link>
+              { tweet.name === "Gemini" ? (
+                <div>Gemini</div>
+              ) : (
+                <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                {tweet.username ?? "anonymous"}
+                </Link>
+              )}
               <div className="tweetdate">
               {tweet.date}
             </div>
-            </div> 
+            </div>
           <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
             <div className="tweetcontent">
             <h5>{tweet.content}</h5>  
@@ -215,20 +338,53 @@ function App() {
               <div className="tweetreply">
               </div>
             </div>
+            <div className="code">
             <div>
               <button onClick={() => handleClick(index)}>code</button>
             </div>
             <div>
               {visibleItems.includes(index) && <div>{tweet.code}</div>}
             </div>
+            {user_Id === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {user_Id === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
             <PreviewImage imagename={tweet.figid}/>
             </div>
         </div>
         ) : (
           tweet.retweetcomment === "" ? (
+            <div className="tweet">
+            <div className="user_fig">
+            <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+            <PreviewImageFromUser tweetname={tweet.name} />
+            </Link>
+            </div>
+            <div className="tweet_all">
+            <div className="tweet_user">
+              <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+              {tweet.username}
+              </Link>
+              <div className="retweet_state">
+                <FontAwesomeIcon icon={faRetweet}/>
+              retweeted
+              </div>
+              <div className="tweetdate">
+              {tweet.date}
+            </div>
+            </div>
             <div className="retweet">
-              <div>{tweet.name} retweeted</div>
-              <div className="tweet">
                 <div className="user_fig">
                   <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
                   <PreviewImageFromUser tweetname={ConvertFromIdToName(tweet.retweetto)} />
@@ -237,11 +393,12 @@ function App() {
                 <div className="tweet_all">
                   <div className="tweet_user">
                     <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                    {ConvertFromIdToName(tweet.retweetto)}
+                    {/* {ConvertFromIdToName(tweet.retweetto)} */}
+                    {tweet.retweettoname}
                     </Link>
-                    <div className="tweetdate">
+                    {/* <div className="tweetdate">
                     {tweet.date}
-                  </div>
+                  </div> */}
                   </div> 
                 <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
                   <div className="tweetcontent">
@@ -282,20 +439,55 @@ function App() {
                     <div className="tweetreply">
                     </div>
                   </div>
+                  <div className="code">
                   <div>
-                    <button onClick={() => handleClick(index)}>code</button>
+                  <button onClick={() => handleClick(index)}>code</button>
                   </div>
                   <div>
-                    {visibleItems.includes(index) && <div>{tweet.code}</div>}
+                  {visibleItems.includes(index) && <div>{tweet.code}</div>}
                   </div>
+                  {user_Id === tweet.name ? (
+                    <div>
+                    <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+                    </div>
+                  ):(
+                    null
+                  )}
+                {user_Id === tweet.name ? (
+                <div>
+                <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+                </div>
+                ):(
+                  null
+                )}
+                </div>
                 <PreviewImage imagename={tweet.figid}/>
+              </div>
               </div>
               </div>
             </div>
           ) : (
-            <div className="retweet">
-              <div>{tweet.name}{tweet.retweetcomment}</div>
-              <div className="tweet">
+            <div className="tweet">
+            <div className="user_fig">
+            <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+            <PreviewImageFromUser tweetname={tweet.name} />
+            </Link>
+            </div>
+            <div className="tweet_all">
+            <div className="tweet_user">
+              <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+              {tweet.username}
+              </Link>
+              <div className="retweet_state">
+                <FontAwesomeIcon icon={faRetweet}/>
+              retweeted
+              </div>
+              <div className="tweetdate">
+              {tweet.date}
+            </div>
+            </div>
+              <div className="retweet_comment">{tweet.retweetcomment}</div>
+              <div className="retweet">
                 <div className="user_fig">
                   <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
                   <PreviewImageFromUser tweetname={ConvertFromIdToName(tweet.retweetto)} />
@@ -304,12 +496,12 @@ function App() {
                 <div className="tweet_all">
                   <div className="tweet_user">
                     <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                    {ConvertFromIdToName(tweet.retweetto)}
+                    {tweet.retweettoname}
                     </Link>
-                    <div className="tweetdate">
+                    {/* <div className="tweetdate">
                     {tweet.date}
+                    </div> */}
                   </div>
-                  </div> 
                 
                 <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
                   <div className="tweetcontent">
@@ -349,23 +541,40 @@ function App() {
                     <div className="tweetreply">
                     </div>
                   </div>
+                  <div className="code">
                   <div>
                     <button onClick={() => handleClick(index)}>code</button>
                   </div>
                   <div>
                     {visibleItems.includes(index) && <div>{tweet.code}</div>}
                   </div>
+                  {user_Id === tweet.name ? (
+                    <div>
+                    <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+                    </div>
+                  ):(
+                    null
+                  )}
+                  {user_Id === tweet.name ? (
+                    <div>
+                    <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+                    </div>
+                  ):(
+                    null
+                  )}
+                  </div>
                 <PreviewImage imagename={tweet.figid}/>
               </div>
               </div>
             </div>
+          </div>
           )
         )
     )}
         
 
 
-
+    </div>
       </div>
       <div className="user_profile">
         <div>
@@ -399,7 +608,7 @@ function App() {
         検索
       </div>
       </Link>
-      <Link href={{pathname: '/profile', query: { text: displayname } }} className="profile_page">
+      <Link href={{pathname: '/profile', query: { text: user_Id } }} className="profile_page">
       <div>
         <FontAwesomeIcon icon={faUser}/>
       </div>

@@ -118,7 +118,7 @@ export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => 
             </div>
         ) : (
             null
-        )}
+            )}
         
         
     </div>

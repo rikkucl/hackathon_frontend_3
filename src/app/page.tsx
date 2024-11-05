@@ -19,9 +19,6 @@ const Loginpage = () => {
         {/* <Link href={{pathname: "./view"}}>
         閲覧画面
         </Link> */}
-        <Link href={{pathname: "/register"}} >
-        ユーザー登録
-        </Link>
         </header>
       </div>
     )

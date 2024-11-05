@@ -20,11 +20,15 @@ interface Tweet {
 }
 interface Followreq {
     followerreq: string;
-    followedreq: string
+    followedreq: string;
+    followerreqname?: string;
+    followedreqname?: string
 }
 interface Follow {
     follower: string;
-    followed: string
+    followed: string;
+    folowername?: string;
+    followedname?: string
 }
 interface AppContextType {
     Tweets: Tweet[];

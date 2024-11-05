@@ -5,6 +5,7 @@ import { fireAuth, db } from "./lib/firebase";
 import React, { useState, Dispatch, SetStateAction } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc, serverTimestamp, addDoc, collection, getDoc } from 'firebase/firestore';
+import Link from "next/link";
 //import Post from "./FirebaseLoginFigure"
 // import { useRouter } from "next/navigation"
 
@@ -118,7 +119,7 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
   return (
     <div>
       <div className="login">
-        <h5 className="action">ログイン</h5>
+        <h5 className="login_title">ログイン</h5>
         <form onSubmit={signInfire}>
         <div className="form_block">
         <label>メールアドレス:</label>
@@ -128,9 +129,12 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
         <label>パスワード:</label>
           <input name="password" type="password" value={loginpassword} onChange={(e => setLoginpassword(e.target.value))} style={{color: "black"}}></input>
         </div>
-        <button>ログイン</button>
+        <button className="submit-button">ログイン</button>
       </form>
       </div>
+      <Link href={{pathname: "/register"}} className="register_page">
+      ユーザー登録
+      </Link>
 
       {/* <div className="logout">
         <h5 className="action">ログアウト</h5>

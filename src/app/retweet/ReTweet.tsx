@@ -4,6 +4,8 @@ import "../App.css"
 import React from 'react';
 import PostTweet  from "./Tweetfig";
 import { text } from "stream/consumers";
+import { useEffect } from "react";
+import { getAuth } from "firebase/auth";
 import { useAppContext } from "../context";
 
 
@@ -42,7 +44,20 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   const [errorMessage, setErrorMessage] = useState("")
   const [lang, setLang]= useState("")
   const [retweetcomment, setRetweetcomment] = useState("")
+  const [user_id, setUser_id] = useState<string>("")
   //Formをsubmitしたら発火する関数
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser
+    if (user) {
+      const uid = user.uid
+      // fetchUser(uid)
+      setUser_id(uid)
+    } else {
+      console.log("cannot find user")
+    }
+  })
+
   const RetweetWithComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const RetweetTo: Tweet| undefined = Tweets.find(tweet => tweet.id === retweetto)
@@ -53,7 +68,7 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
           {
           method: "POST",
           body: JSON.stringify({
-            name: displayname,
+            name: user_id,
             content: RetweetTo.content,
             like: 0,
             retweet: 0,

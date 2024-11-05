@@ -41,11 +41,15 @@ interface Tweet {
   replynumber: number;
   retweetto: string;
   retweetcomment: string;
+  username?: string;
+  retweettoname?: string
 }
 const Replypage = () => {
     const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext();
     const [tweet_id, setTweet_id] = useState<string>("")
     const [visibleItems, setVisibleItems] = useState<number[]>([]);
+    const [displayId, setDisplayId] = useState<string>("")
+    const [userNames, setUsernames] = useState<Tweet[]>([])
 
     useEffect(() => {
       const querystring = window.location.search;
@@ -61,11 +65,54 @@ const Replypage = () => {
       if (user) {
         const uid = user.uid
         fetchUser(uid)
+        setDisplayId(uid)
       } else {
         console.log("cannot find user")
       }
     })
-    const filteredTweets = Tweets.filter(tweet => {
+    useEffect(() => {
+      const getUserData = async () => {
+        const data = await fetchNamesFromTweets(Tweets)
+        setUsernames(data)
+      }
+      getUserData();
+    }, [Tweets])
+    const fetchNamesFromTweets = async (Objects: Tweet[]) => {
+      const names = await Promise.all(
+        Objects.map(async (tweet) => {
+          // console.log("tweet.name", tweet.name)
+          if (tweet.retweetto === ""){
+            const name = await fetchName(tweet.name);
+            return { ...tweet, username: name}
+          }
+          else {
+            const name = await fetchName(tweet.name);
+            const retweettoname = await fetchName(ConvertFromIdToName(tweet.retweetto))
+            console.log("tweet.retweetto is",tweet.retweetto)
+            console.log("retweettoname is",retweettoname)
+            return { ...tweet, username: name, retweettoname: retweettoname}
+          }
+        })
+      )
+      return names;
+    }
+    const fetchName = async (uid: string) => {
+      try {
+        const userDoc = await getDoc(doc(db, "users", uid));
+        console.log(uid)
+        if (userDoc.exists()) {
+          return userDoc.data().registername
+        } else {
+          console.log("do not exists userDoc")
+          return ""
+        }
+      } catch (err) {
+        // console.log(uid)
+        console.log("error happened", err)
+        return ""
+      }
+    }
+    const filteredTweets = userNames.filter(tweet => {
         const regex = new RegExp(tweet_id, 'i');
         return regex.test(tweet.replyto)
     })
@@ -89,7 +136,7 @@ const Replypage = () => {
               // },
               body: JSON.stringify({
                 tweet_id: id,
-                user_id: displayname,
+                user_id: displayId,
               }),
             })
             fetchTweet()
@@ -160,7 +207,7 @@ const Replypage = () => {
           <div className="tweet_all">
             <div className="tweet_user">
               <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
-              {tweet.name}              
+              {tweet.username}            
               </Link>
               <div className="tweetdate">
               {tweet.date}
@@ -217,7 +264,7 @@ const Replypage = () => {
         ) : (
           tweet.retweetcomment === "" ? (
             <div className="retweet">
-              <div>{tweet.name} retweeted</div>
+              <div>{tweet.username} retweeted</div>
               <div className="tweet">
                 <div className="user_fig">
                   <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
@@ -227,7 +274,7 @@ const Replypage = () => {
                 <div className="tweet_all">
                   <div className="tweet_user">
                     <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                    {ConvertFromIdToName(tweet.retweetto)}
+                    {tweet.retweettoname}
                     </Link>
                     <div className="tweetdate">
                     {tweet.date}
@@ -284,7 +331,7 @@ const Replypage = () => {
             </div>
           ) : (
             <div className="retweet">
-              <div>{tweet.name}{tweet.retweetcomment}</div>
+              <div>{tweet.username}{tweet.retweetcomment}</div>
               <div className="tweet">
                 <div className="user_fig">
                   <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
@@ -294,7 +341,7 @@ const Replypage = () => {
                 <div className="tweet_all">
                   <div className="tweet_user">
                     <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                    {ConvertFromIdToName(tweet.retweetto)}
+                    {tweet.retweettoname}
                     </Link>
                     <div className="tweetdate">
                     {tweet.date}

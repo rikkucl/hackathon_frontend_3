@@ -3,7 +3,7 @@ import { getDownloadURL, ref, StorageReference } from "firebase/storage";
 import React, { useState, useEffect} from "react";
 import { storage } from "./firebase"
 import { promises } from "dns";
-import { getDocs, query, collection, where } from "firebase/firestore";
+import { getDoc, query, collection, where, doc } from "firebase/firestore";
 import { db } from "./firebase";
 
 
@@ -110,14 +110,14 @@ export const PreviewImageFromUser: React.FC<{ tweetname: string }> = ({ tweetnam
     const FetchProfileFig = async (tweetname: string) => {
         try {
             console.log(tweetname)
-            const userDoc = await getDocs(query(collection(db, "users"), where("registername", "==", tweetname)));
+            const userDoc = await getDoc(doc(db, "users", tweetname));
             // const userDoc = await getDocs(collection(db, "users"));
             //console.log(userDoc)
-            if (!userDoc.empty) {
-                const doc = userDoc.docs[0]
-                const userData = doc.data()
-                const fig: string = userData.figid
-                setImagename(fig)
+            if (userDoc.exists()) {
+                //const userData = doc.data()
+                //const fig: string = userDoc.data().figid
+                setImagename(userDoc.data().figid)
+                // setImagename(fig)
             } else {
                 console.log("userfigid is empty")
                 setImagename("")
@@ -168,7 +168,7 @@ export const PreviewImageFromUser: React.FC<{ tweetname: string }> = ({ tweetnam
                         )}
             </div>
         ) : (
-            null
+            <div style={{ height: 50, width: 50, borderRadius: "50%", border:"2px solid black", objectFit: "cover"}}>No image</div>
         )}
         
         

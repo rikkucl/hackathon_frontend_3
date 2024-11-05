@@ -1,7 +1,22 @@
 .App {
-  text-align: center;
+  background: linear-gradient(45deg, #8e44ad, #3498db);
+  font-family: 'Helvetica Neue', sans-serif;
+  color: #fff;
+  height: 100vh;
+  z-index: 0;
+}
+.app {
+  background: linear-gradient(45deg, #8e44ad, #3498db);
+  font-family: 'Helvetica Neue', sans-serif;
+  color: #fff;
+  height: 120vh;
+  z-index: 0;
 }
 
+.app_profile {
+  overflow: auto;
+
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -16,7 +31,7 @@
 
 
 .App-header {
-  background-color: #282c34;
+  /* background-color: #282c34; */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -60,7 +75,7 @@
   flex-flow: column;
 }
 form {
-  max-width: 500px;
+  max-width: 1000px;
   margin: 0 auto;
   margin-top: 0%;
   margin-bottom: 50px;
@@ -95,8 +110,66 @@ label {
   align-items: center;
   justify-content: center;
   width: 500px;
-
 } */
+.login_title {
+  font-size: 24px;      /* 見出しのフォントサイズを大きく */
+  /* text-align: center;    中央揃え */
+  margin-bottom: 20px;   /* 下のマージンを追加 */
+  color: #333;          /* 色をダークグレーに変更 */
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+}
+
+.register {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.form_block {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.form_block label {
+  margin-right: 100px;
+  display: inline;
+  white-space: nowrap;
+}
+
+.submit-button {
+  width: 100%;           /* ボタンを幅いっぱいに */
+  padding: 10px;        /* パディングを追加 */
+  background: #27ae60; /* 明るい緑色に変更 */
+  color: #fff;          /* ボタンの文字色 */
+  border: none;         /* ボーダーなし */
+  border-radius: 5px;   /* 角を丸くする */
+  cursor: pointer;      /* カーソルをポインターに */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* ボタンに影を付ける */
+  transition: background 0.3s; /* ホバー時のアニメーション */
+}
+
+button {
+  width: 100%;        /* ボタンを幅いっぱいに */
+  padding: 10px;        /* パディングを追加 */
+  background: #27ae60; /* 明るい緑色に変更 */
+  color: #fff;          /* ボタンの文字色 */
+  border: none;         /* ボーダーなし */
+  border-radius: 5px;   /* 角を丸くする */
+  cursor: pointer;      /* カーソルをポインターに */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* ボタンに影を付ける */
+  transition: background 0.3s; /* ホバー時のアニメーション */
+}
+
+.submit-button:hover {
+  background: linear-gradient(45deg, #7a3e9d, #2980b9); /* ホバー時のグラデーション */
+}
+
+
  .customLink {
   color: inherit;
   text-decoration: none;
@@ -109,8 +182,9 @@ label {
   /* align-items: flex-start; */
   /* justify-content: ;  */
   border-color: lightsteelblue;
-  width: 100%;
+  width: 90%;
   /* margin: auto; */
+  margin-top: 10px;
   margin-bottom: 10px;
 }
 /* .tweet_user {
@@ -129,8 +203,8 @@ label {
   margin-bottom: 10px;
   margin-top: 10px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  /* justify-content: center;
+  align-items: center; */
 }
 
 .twitter_profile {
@@ -152,27 +226,44 @@ label {
   /* background-color: #282c34; */
 }
 
+.user_prof {
+  display: flex;
+  flex-direction: row;
+}
+
 /* .tweet_user div {
   margin-right: 30px;
   display: flex;
   justify-content: center;
 } */
+.retweet_state {
+  margin-left: 10px;
+}
+
 .tweetdate {
   margin: auto;
 }
 .user_container {
-  /* display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column; */
   position: absolute;
   left: 30%;
+  height: 100vh;
+  width: 50%;
+  /* background-color: transparent; */
+  overflow: auto;
 }
+
+/* .scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: auto;
+  padding: 19px;
+} */ 
 
 .tweetcontent {
   width: 90%;
   height: auto;
-  border:2px solid #000000;
+  border:2px solid lightsteelblue;
   display: flex;
 }
 
@@ -217,8 +308,35 @@ label {
   margin-top: 10px;
 }
 
+.code {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.code div {
+  margin-bottom: 5px;
+}
+
 .tweetretweet {
   margin-top: 10px;
+}
+
+
+
+.retweet {
+  margin-left: 10px;
+  background-color: rgba(255, 255, 255, 0.9); /* 半透明の白 */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* 薄いボーダー */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* やわらかいシャドウ */
+  padding: 16px;
+  border-radius: 8px; /* 角を丸める */
+  margin: 20px 0; /* 上下のマージンを設定 */
+  color: #333; /* テキストの色をダークに設定 */
+  width: 70%;
+  display: flex;
+  flex-direction: row;
 }
 
 
@@ -275,18 +393,33 @@ label {
   top: 60%;
 }
 
+.register_page {
+  color: inherit;
+  text-decoration: none;
+  padding-top: 5px;
+  padding-left: 5px;
+  padding-bottom: 5px;
+  padding-right: 5px;
+  border: 2px solid white;
+  width: 100%;
+}
+
 .profile {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  }
+  height: 80vh;
+}
 
 .profileheader {
   position: sticky;
   display: flex;
   flex-direction: column;
+}
+
+.profileheader div {
+  margin-bottom: 10px;
 }
 .profilename {
   display: flex;
@@ -304,4 +437,92 @@ label {
   overflow: auto;
   /* flex-grow: 1; */
   padding: 19px;
+}
+
+.post {
+  margin-top: 5%;
+  position: absolute;
+  left: 20%;
+  height: 70vh;
+  padding-top: 10%;
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1); /* 半透明の背景 */
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  overflow: auto;
+}
+
+.post_retweet {
+  margin-top: 5%;
+  position: absolute;
+  left: 20%;
+  height: 80vh;
+  padding-top: 5%;
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1); /* 半透明の背景 */
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  overflow: auto;
+}
+.post_code {
+  display: flex;
+  flex-direction: row;
+}
+
+.tweet_title {
+  font-size: 24px;      /* 見出しのフォントサイズを大きく */
+  /* text-align: center;    中央揃え */
+  margin-bottom: 50px;   /* 下のマージンを追加 */
+  color: #333; 
+  text-align: center;
+}
+
+.retweet_title {
+  font-size: 24px;      /* 見出しのフォントサイズを大きく */
+  /* text-align: center;    中央揃え */
+  margin-bottom: 20px;   /* 下のマージンを追加 */
+  color: #333; 
+  text-align: center;
+}
+
+.tweet_post {
+  /* width: 100%; */
+  width: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.tweet_submit {
+  display: flex;
+  flex-direction: row;
+}
+.tweet_post label {
+  margin-right: 30px;
+  display: inline;
+  white-space: nowrap;
+}
+
+.tweet_post textarea {
+  margin-right: 30px;
+}
+
+
+.tweet_post div {
+  padding-bottom: 10px;
+}
+
+
+
+.search_word {
+  margin-top: 50px;
+  padding-bottom: 30px;
+  width: 50%;
+  height: 3vh;
 }

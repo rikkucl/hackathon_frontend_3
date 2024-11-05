@@ -66,9 +66,9 @@ const RegisterPage = () => {
       }
     }
 return (
-  <div>
+  <div className="App">
     <div className="register">
-      <h5 className="action">ユーザー登録 Standard Plan</h5>
+      <h5 className="login_title">ユーザー登録</h5>
       <form onSubmit={signUpStandard}>
       <div className="form_block">
       <label>ユーザー名</label>
@@ -88,32 +88,7 @@ return (
       </div>
       <button>ユーザー登録</button>
       </form>
-      {/* <Link href={{pathname: "../view"}}>
-      閲覧画面
-      </Link> */}
   </div>
-  <div className="register">
-  <h5 className="action">ユーザー登録 Premium Plan</h5>
-    <form onSubmit={signUpPremium}>
-    <div className="form_block">
-    <label>ユーザー名</label>
-    <input name="displayname" value={registername_p} type="text" onChange={(e) => setRegistername_p(e.target.value)} style={{color: "black"}}></input>
-    </div>
-    <div className="form_block">
-    <label>メールアドレス:</label>
-    <input name="email" type="email" value={email_p} onChange={(e) => setEmail_p(e.target.value)} style={{color: "black"}}></input>
-    </div>
-    <div className="form_block">
-    <label>パスワード:</label>
-    <input name="password" type="password" value={password_p} onChange={(e => setPassword_p(e.target.value))} style={{color: "black"}}></input>
-    </div>
-    <div>
-      <label>ユーザー画像</label>
-      <Post setFigure_id={setFigure_id_p} />
-    </div>
-    <button>ユーザー登録</button>
-    </form>
-    </div>
   </div>
   ) 
 }

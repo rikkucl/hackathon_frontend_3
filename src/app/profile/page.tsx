@@ -4,12 +4,14 @@ import React from "react"
 import PreviewImage from "../lib/PreviewImage"
 import "../App.css"
 import { useEffect } from "react"
-import { getDoc, doc } from "firebase/firestore"
+import { getDoc, doc, updateDoc } from "firebase/firestore"
 import { db } from "../lib/firebase"
 import { useState } from "react"
 import { getAuth } from "firebase/auth"
 import PreviewImageFromUser from "../lib/PreviewImageFromUser"
 import Link from "next/link"
+import Modal from "./Modal"
+import Post from "../register/ProfileFigure"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
@@ -17,7 +19,13 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faComment } from "@fortawesome/free-solid-svg-icons";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
-
+import { faRetweet } from "@fortawesome/free-solid-svg-icons"
+import { faHouse } from "@fortawesome/free-solid-svg-icons"
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
 interface Tweet {
     id: string;
     name: string;
@@ -33,27 +41,44 @@ interface Tweet {
     replynumber: number;
     retweetto: string;
     retweetcomment: string;
+    username?: string;
+    retweettoname?: string
   }
 interface Followreq {
     followerreq: string;
     followedreq: string
+    followerreqname?: string;
+    followedreqname?: string;
 }
 interface Follow {
     follower: string;
-    followed: string
+    followed: string;
+    followername?: string;
+    followedname?: string;
 }
 
 const ProfilePage = () => {
     const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext()
     const [user_name, setUser_name] = useState<string>("")
     const [user_fig, setUserfig] = useState<string>("")
+    const [displayId, setDisplayId] = useState<string>("")
     const [visibleItems, setVisibleItems] = useState<number[]>([]);
+    const [isModalOpen, setModalOpen] = useState(false)
+    const [fig_changed, setFig_change] = useState<string>("")
+    const [statusmessage, setStatusmessage] = useState<string>("")
+    const [statusmessage_changed, setStatusmessage_changed] = useState<string>("")
+    const [name_changed, setName_changed] = useState<string>("")
+    const [usernames, setUsernames] = useState<Tweet[]>([])
+    const [follows_, setFollows_] = useState<Follow[]>([])
+    const [followreqs_, setFollowreqs_] = useState<Followreq[]>([])
+    const [username, setUsername] = useState<string>("")
     useEffect(() => {
       const auth = getAuth();
       const user = auth.currentUser
       if (user) {
         const uid = user.uid
         fetchUser(uid)
+        setDisplayId(uid)
       } else {
         console.log("cannot find user")
       }
@@ -68,13 +93,76 @@ const ProfilePage = () => {
             setUser_name(id)
         }
       }, [])
-    const filteredTweets = Tweets.filter(tweet => {
+
+    useEffect(() => {
+      fetchUser_(user_name)
+    })
+
+    const fetchUser_ = async (uid: string) => {
+      try {
+        const userDoc = await getDoc(doc(db, "users", uid));
+        if (userDoc.exists()) {
+          setUsername(userDoc.data().registername)
+        } else {
+          setDisplayfig("")
+        }
+      } catch (err) {
+        console.log("error happened", err)
+      }
+    }
+    const filteredTweets = usernames.filter(tweet => {
         const regex = new RegExp(user_name, 'i');
         return regex.test(tweet.name)
     })
+    const fetchNamesFromTweets = async (Objects: Tweet[]) => {
+      const names = await Promise.all(
+        Objects.map(async (tweet) => {
+          // console.log("tweet.name", tweet.name)
+          if (tweet.retweetto === ""){
+            const name = await fetchName(tweet.name);
+            return { ...tweet, username: name}
+          }
+          else {
+            const name = await fetchName(tweet.name);
+            const retweettoname = await fetchName(ConvertFromIdToName(tweet.retweetto))
+            console.log("tweet.retweetto is",tweet.retweetto)
+            console.log("retweettoname is",retweettoname)
+            return { ...tweet, username: name, retweettoname: retweettoname}
+          }
+        })
+      )
+      return names;
+    }
+    useEffect(() => {
+      const getUserData = async () => {
+        const data = await fetchNamesFromTweets(Tweets)
+        setUsernames(data)
+      }
+      getUserData();
+    }, [Tweets])
+  
+    const fetchName = async (uid: string) => {
+      try {
+        const userDoc = await getDoc(doc(db, "users", uid));
+        console.log(uid)
+        if (userDoc.exists()) {
+          return userDoc.data().registername
+        } else {
+          console.log("userfigid is not defined")
+          return ""
+        }
+      } catch (err) {
+        console.log(uid)
+        console.log("error happened", err)
+        return ""
+      }
+    }
+
     useEffect(() => {
         fetchFollow()
     })
+
+    
     const fetchUser = async (uid: string) => {
       try {
         const userDoc = await getDoc(doc(db, "users", uid));
@@ -129,6 +217,49 @@ const ProfilePage = () => {
             console.log(err)
         }
     }
+
+
+
+    useEffect(() => {
+      const getUserData = async () => {
+        const data = await fetchNamesFromFollows(follows)
+        setFollows_(data)
+      }
+      getUserData();
+    }, [follows])
+
+    const fetchNamesFromFollows = async (follows: Follow[]) => {
+      const names = await Promise.all(
+        follows.map(async (follow) => {
+          const followername = await fetchName(follow.follower)
+          const followedname = await fetchName(follow.followed)
+          return { ...follow, followername: followername, followedname: followedname}
+        })
+      )
+      return names;
+    }
+
+
+    useEffect(() => {
+      const getUserData = async () => {
+        const data = await fetchNamesFromFollowreqs(followreqs)
+        setFollowreqs_(data)
+      }
+      getUserData();
+    }, [followreqs])
+
+    const fetchNamesFromFollowreqs = async (followreqs: Followreq[]) => {
+      const names = await Promise.all(
+        followreqs.map(async (followreq) => {
+          const followerreqname = await fetchName(followreq.followerreq)
+          const followedreqname = await fetchName(followreq.followedreq)
+          return { ...followreq, followerreqname: followerreqname, followedname: followedreqname}
+        })
+      )
+      return names;
+    }
+    
+
     const handleClick = (key: number) => {
         setVisibleItems((prev) =>{
           if (prev.includes(key)) {
@@ -138,12 +269,12 @@ const ProfilePage = () => {
           }
         })
       }
-    const filteredFollows = follows.filter(follow => {
+    const filteredFollows = follows_.filter(follow => {
         const regex = new RegExp(user_name, 'i');
         return regex.test(follow.follower)
     })
-    const filteredFollowreqs = followreqs.filter(followreq => {
-        const regex = new RegExp(displayname, 'i');
+    const filteredFollowreqs = followreqs_.filter(followreq => {
+        const regex = new RegExp(displayId, 'i');
         return regex.test(followreq.followedreq)
     })
 
@@ -155,7 +286,7 @@ const ProfilePage = () => {
                 {
                     method: "POST",
                     body: JSON.stringify({
-                        followerreq: displayname,
+                        followerreq: displayId,
                         followedreq: user_name
                     }),
                 });
@@ -174,7 +305,7 @@ const ProfilePage = () => {
                 {
                     method: "POST",
                     body: JSON.stringify({
-                        followed: displayname,
+                        followed: displayId,
                         follower: followerreq
                     }),
                 });
@@ -226,6 +357,30 @@ const ProfilePage = () => {
         }
       }
 
+    const toggleModal = () => {
+      setModalOpen(!isModalOpen)
+    }
+    const selectChangedString = (oldstring: string, newstring: string) => {
+      return newstring !== "" ? newstring:oldstring;
+    }
+    const updateData = async (id:string, newData:any) => {
+      const docRef = doc(db, "users", id);
+
+      try {
+        await updateDoc(docRef, newData);
+        console.log("Document successfully updated")
+      } catch(error) {
+        console.log("Error updating document", error)
+      }
+    }
+
+    const changeprofile = async (e:any) => {
+      e.preventDefault()
+      const name = selectChangedString(displayname, name_changed)
+      const figid = selectChangedString(displayfig, fig_changed)
+      const message = selectChangedString(statusmessage, statusmessage_changed)
+      await updateData(displayId, {registername: name, figid:figid, statusmessage: message})
+    } 
     const handlelike = async (id: string) => {
         try {
           const response = await fetch(
@@ -237,15 +392,88 @@ const ProfilePage = () => {
               // },
               body: JSON.stringify({
                 tweet_id: id,
-                user_id: displayname,
+                user_id: displayId,
               }),
             })
             fetchTweet()
         }catch (err){
           console.log(err)
         }
-    
       }
+
+      
+  const handlegemini = async (id: string) => {
+    const tweet = Tweets.find(tweet => tweet.id === id)
+    if (tweet !== undefined) {
+      if (tweet.code === "" || tweet.errormessage === "" || tweet.lang === "") {
+        alert("You are not post code or console or language")
+        return
+      }
+      try {
+        const response = await fetch(
+          "https://hackathon-backend-1012715555694.us-central1.run.app/gemini", 
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "",
+              cotent: tweet.content,
+              like: 0,
+              retweet: 0,
+              figid: "",
+              code: tweet.code,
+              errormessage: tweet.errormessage,
+              lang: tweet.lang,
+              replyto: tweet.id,
+              replynumber: 0,
+              retweetto: "",
+              retweetcomment: "",
+            })
+          })
+          if (!response.ok) {
+            throw Error("Failed to POST")
+          }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+  }
+
+  const executeOnGemini = async (id: string) => {
+    const tweet = Tweets.find(tweet => tweet.id === id)
+    if (tweet !== undefined) {
+      if (tweet.code === "" || tweet.lang === "") {
+        alert("You are not post code or console or language")
+        return
+      }
+      try {
+        const response = await fetch(
+          "https://hackathon-backend-1012715555694.us-central1.run.app/execute",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name: "",
+              cotent: tweet.content,
+              like: 0,
+              retweet: 0,
+              figid: "",
+              code: tweet.code,
+              errormessage: tweet.errormessage,
+              lang: tweet.lang,
+              replyto: tweet.id,
+              replynumber: 0,
+              retweetto: "",
+              retweetcomment: "",
+            })
+          })
+          if (!response.ok) {
+            throw Error("Failed to POST")
+          }
+      } catch (err) {
+        console.log(err)
+      }
+    }
+  }
+
       const ConvertFromIdToName = (id: string) => {
         const TweetFiltered: Tweet| undefined = Tweets.find(tweet => tweet.id === id)
         if (TweetFiltered !== undefined) {
@@ -256,7 +484,8 @@ const ProfilePage = () => {
       }
     
     return (
-        <div className="app">
+      <div className="app">
+        <div className="app_profile">
         <div className="profile">
             <div className="profileheader">
                 <div className="profilename">
@@ -264,26 +493,37 @@ const ProfilePage = () => {
                 <PreviewImageFromUser tweetname={user_name} />
                 </div>
                 <div>
-                {user_name}
+                {username}
                 </div>
                 </div>
+                <div className="profilemessage">
+                  <div>{statusmessage}</div>
+                </div>
+                {displayId === user_name ? (
+                  <div>
+                  <button onClick={toggleModal}>ユーザープロファイルの変更</button>
+                  </div>
+                ):(
+                  null
+                )}
+
                 <div className="profilefollow">
                     <div>
                         <div>フォローしている人</div>
                         {Object.values(filteredFollows).map((follow) => 
                         <div className="follow">
-                            {follow.followed}
+                            {follow.followedname}
                         </div>
                         )}
                     </div>
                     
-                    {displayname !== user_name ? (
+                    {displayId !== user_name ? (
                         <div>
-                        {isfollow(displayname, user_name) ? (
+                        {isfollow(displayId, user_name) ? (
                             <div>フォロー済</div>
                         ) : (
                             <div>
-                                {isfollowreq(displayname, user_name) ? (
+                                {isfollowreq(displayId, user_name) ? (
                                     <div>フォローリクエスト済</div>
                                 ) : (
                                     <div>
@@ -298,278 +538,315 @@ const ProfilePage = () => {
                         )}
                         </div>
                     ) : (
-                        Object.values(filteredFollowreqs).map((followreq) => 
+                      <div>
+                      <div>
+                        {Object.values(filteredFollowreqs).map((followreq) => 
                         <div className="followrequest">
-                            <div>{followreq.followerreq}</div>
+                            <div>{followreq.followerreqname}</div>
                             <button onClick={() => acceptfollow(followreq.followerreq)} type="submit">フォローを受け入れる</button>
                         </div>
-                        )
+                        )}
+                        </div>
+                        </div>
                     )}
                 </div>    
             </div>
             <div className="profilecontent">
-              {/* {Object.values(filteredTweets).map((tweet, index) => 
-                tweet.retweetto === "" ? (
-                <div className="tweet">
-                    <div className="tweetcontent">
-                    <h5>{tweet.name}, {tweet.content}, {tweet.date}, {tweet.liked}</h5>  
-                    </div>
-                    <div className="tweetlike">
-                    </div>
-                </div>
-                )
-                )} */}
                 <div>ポスト一覧</div>
                 <div>
+                <div className="user_container">
+                <div className="scroll">
                 {Object.values(filteredTweets).map((tweet, index) =>
-                    tweet.retweetto === "" ? (
-                      <div className="tweet">
-                      <div className="user_fig">
-                        <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
-                        <PreviewImageFromUser tweetname={tweet.name} />
-                        </Link>
+            tweet.retweetto === "" ? (
+              <div className="tweet">
+              <div className="user_fig">
+                <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                <PreviewImageFromUser tweetname={tweet.name} />
+                </Link>
+              </div>
+              <div className="tweet_all">
+                <div className="tweet_user">
+                  <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                  {tweet.username}           
+                  </Link>
+                  <div className="tweetdate">
+                  {tweet.date}
+                </div>
+                </div> 
+              <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
+                <div className="tweetcontent">
+                <h5>{tweet.content}</h5>  
+                </div>
+                </Link> 
+                <div className="tweetoption">
+                <div className="tweetlike">
+                    <button onClick={() => handlelike(tweet.id)} className="tweet_like">
+                      <div className="like_icon">
+                        <FontAwesomeIcon icon={faThumbsUp} />
                       </div>
-                      <div className="tweet_all">
-                        <div className="tweet_user">
-                          {/* {FetchProfileFig tweet.name} */}
-                          <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
-                          {tweet.name}              
-                          </Link>
-                          {/* <div>
-                          </div> */}
-                          <div className="tweetdate">
-                          {tweet.date}
-                        </div>
-                        </div> 
-                      
-                        {/* <div>
-                        <PreviewImage imagename={tweet.figid} />
-                        </div> */}
-                      {/* </div>
-                      <div className="tweet_all"> */}
-                      <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
-                        <div className="tweetcontent">
-                        <h5>{tweet.content}</h5>  
-                        </div>
-                        </Link> 
-                        <div className="tweetoption">
-                          <div className="tweetlike">
-                          <button onClick={() => handlelike(tweet.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0'}} className="tweet_like">
-                            <div>
-                              <FontAwesomeIcon icon={faThumbsUp} />
-                            </div>
-                            <div>
-                            {tweet.liked}
-                            </div>
-                            </button>
-                          </div>
-                          <div className="tweetreply">
-                          <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
-                          <div>
-                            <FontAwesomeIcon icon={faComment} />
-                          </div>
-                          <div>
-                            {tweet.replynumber}
-                          </div>
-                          </Link>
-                          </div>
-                          <div className="tweetretweet">
-                          <Link href={{pathname: '/retweet', query: { text: tweet.id } }} className="customLink">
-                          <div>
-                          リツイート
-                          </div>
-                          <div>
-                            {tweet.retweet}
-                          </div>
-                          </Link>
-                          </div>
-                          
-                          <div className="tweetreply">
-                          {/* <Link href={{pathname: '/replysite', query: { text: tweet.id}}}>
-                          リプライ一覧
-                          </Link> */}
-                          </div>
-                        </div>
-                        <div>
-                          <button onClick={() => handleClick(index)}>code</button>
-                        </div>
-                        <div>
-                          {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                        </div>
-                        {/* <button onClick={() => handleNavigation(tweet.id)}>リプライ</button> */}
-                        <PreviewImage imagename={tweet.figid}/>
-                        </div>
+                      <div className="like_number">
+                      {tweet.liked}
+                      </div>
+                      </button>
                     </div>
-                    ) : (
-                      tweet.retweetcomment === "" ? (
-                        <div className="retweet">
-                          <div>{tweet.name} retweeted</div>
-                          <div className="tweet">
-                            <div className="user_fig">
-                              <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                              <PreviewImageFromUser tweetname={ConvertFromIdToName(tweet.retweetto)} />
-                              </Link>
-                            </div>
-                            <div className="tweet_all">
-                              <div className="tweet_user">
-                                {/* {FetchProfileFig tweet.name} */}
-                                <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                                {/* {tweet.name} */}
-                                {ConvertFromIdToName(tweet.retweetto)}
-                                </Link>
-                                {/* <div>
-                                </div> */}
-                                <div className="tweetdate">
-                                {tweet.date}
-                              </div>
-                              </div> 
-                            
-                              {/* <div>
-                              <PreviewImage imagename={tweet.figid} />
-                              </div> */}
-                            {/* </div>
-                            <div className="tweet_all"> */}
-                            <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
-                              <div className="tweetcontent">
-                              <h5>{tweet.content}</h5>  
-                              </div>
-                              </Link> 
-                              <div className="tweetoption">
-                                <div className="tweetlike">
-                                <button onClick={() => handlelike(tweet.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0'}} className="tweet_like">
-                                  <div>
-                                    <FontAwesomeIcon icon={faThumbsUp} />
-                                  </div>
-                                  <div>
-                                  {tweet.liked}
-                                  </div>
-                                  </button>
-                                </div>
-                                <div className="tweetreply">
-                                <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
-                                <div>
-                                  <FontAwesomeIcon icon={faComment} />
-                                </div>
-                                <div>
-                                  {tweet.replynumber}
-                                </div>
-                                </Link>
-                                </div>
-                                <div className="tweetretweet">
-                                <Link href={{pathname: '/retweet', query: { text: tweet.id } }} className="customLink">
-                                <div>
-                                リツイート
-                                </div>
-                                <div>
-                                  {tweet.retweet}
-                                </div>
-                                </Link>
-                                </div>
-                                
-                                <div className="tweetreply">
-                                {/* <Link href={{pathname: '/replysite', query: { text: tweet.id}}}>
-                                リプライ一覧
-                                </Link> */}
-                                </div>
-                              </div>
-                              <div>
-                                <button onClick={() => handleClick(index)}>code</button>
-                              </div>
-                              <div>
-                                {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                              </div>
-                            {/* <button onClick={() => handleNavigation(tweet.id)}>リプライ</button> */}
-                            <PreviewImage imagename={tweet.figid}/>
-                          </div>
-                          </div>
-                        </div>
-            
-                      ) : (
-                        <div className="retweet">
-                          <div>{tweet.name}{tweet.retweetcomment}</div>
-                          <div className="tweet">
-                            <div className="user_fig">
-                              <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                              <PreviewImageFromUser tweetname={ConvertFromIdToName(tweet.retweetto)} />
-                              </Link>
-                            </div>
-                            <div className="tweet_all">
-                              <div className="tweet_user">
-                                {/* {FetchProfileFig tweet.name} */}
-                                <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
-                                {/* {tweet.name} */}
-                                {ConvertFromIdToName(tweet.retweetto)}
-                                </Link>
-                                {/* <div>
-                                </div> */}
-                                <div className="tweetdate">
-                                {tweet.date}
-                              </div>
-                              </div> 
-                            
-                              {/* <div>
-                              <PreviewImage imagename={tweet.figid} />
-                              </div> */}
-                            {/* </div>
-                            <div className="tweet_all"> */}
-                            <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
-                              <div className="tweetcontent">
-                              <h5>{tweet.content}</h5>  
-                              </div>
-                              </Link> 
-                              <div className="tweetoption">
-                                <div className="tweetlike">
-                                <button onClick={() => handlelike(tweet.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0'}} className="tweet_like">
-                                  <div>
-                                    <FontAwesomeIcon icon={faThumbsUp} />
-                                  </div>
-                                  <div>
-                                  {tweet.liked}
-                                  </div>
-                                  </button>
-                                </div>
-                                <div className="tweetreply">
-                                <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
-                                <div>
-                                  <FontAwesomeIcon icon={faComment} />
-                                </div>
-                                <div>
-                                  {tweet.replynumber}
-                                </div>
-                                </Link>
-                                </div>
-                                <div className="tweetretweet">
-                                <Link href={{pathname: '/retweet', query: { text: tweet.id } }} className="customLink">
-                                <div>
-                                リツイート
-                                </div>
-                                <div>
-                                  {tweet.retweet}
-                                </div>
-                                </Link>
-                                </div>
-                                
-                                <div className="tweetreply">
-                                {/* <Link href={{pathname: '/replysite', query: { text: tweet.id}}}>
-                                リプライ一覧
-                                </Link> */}
-                                </div>
-                              </div>
-                              <div>
-                                <button onClick={() => handleClick(index)}>code</button>
-                              </div>
-                              <div>
-                                {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                              </div>
-                            {/* <button onClick={() => handleNavigation(tweet.id)}>リプライ</button> */}
-                            <PreviewImage imagename={tweet.figid}/>
-                          </div>
-                          </div>
-                        </div>
-                      )
-                    )
+                  <div className="tweetreply">
+                  <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
+                  <div>
+                    <FontAwesomeIcon icon={faComment} />
+                  </div>
+                  <div>
+                    {tweet.replynumber}
+                  </div>
+                  </Link>
+                  </div>
+                  <div className="tweetretweet">
+                  <Link href={{pathname: '/retweet', query: { text: tweet.id } }} className="customLink">
+                  <div>
+                  <FontAwesomeIcon icon={faRetweet}/>
+                  </div>
+                  <div>
+                    {tweet.retweet}
+                  </div>
+                  </Link>
+                  </div>
+                  <div className="tweetreply">
+                  </div>
+                </div>
+                <div className="code">
+                <div>
+                  <button onClick={() => handleClick(index)}>code</button>
+                </div>
+                <div>
+                  {visibleItems.includes(index) && <div>{tweet.code}</div>}
+                </div>
+                {user_name === tweet.name ? (
+                  <div>
+                  <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+                  </div>
+                ):(
+                  null
+                )}
+                {user_name === tweet.name ? (
+                  <div>
+                  <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+                  </div>
+                ):(
+                  null
                 )}
                 </div>
+                <PreviewImage imagename={tweet.figid}/>
+                </div>
+            </div>
+            ) : (
+              tweet.retweetcomment === "" ? (
+                <div className="tweet">
+                <div className="user_fig">
+                <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                <PreviewImageFromUser tweetname={tweet.name} />
+                </Link>
+                </div>
+                <div className="tweet_all">
+                <div className="tweet_user">
+                  <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                  {tweet.username}
+                  </Link>
+                  <div className="retweet_state">
+                    <FontAwesomeIcon icon={faRetweet}/>
+                  retweeted
+                  </div>
+                  <div className="tweetdate">
+                  {tweet.date}
+                </div>
+                </div>
+                <div className="retweet">
+                    <div className="user_fig">
+                      <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
+                      <PreviewImageFromUser tweetname={ConvertFromIdToName(tweet.retweetto)} />
+                      </Link>
+                    </div>
+                    <div className="tweet_all">
+                      <div className="tweet_user">
+                        <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
+                        {tweet.retweettoname}
+                        </Link>
+                        {/* <div className="tweetdate">
+                        {tweet.date}
+                      </div> */}
+                      </div> 
+                    <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
+                      <div className="tweetcontent">
+                      <h5>{tweet.content}</h5>  
+                      </div>
+                      </Link> 
+                      <div className="tweetoption">
+                        <div className="tweetlike">
+                        <button onClick={() => handlelike(tweet.id)} className="tweet_like">
+                          <div className="like_icon">
+                            <FontAwesomeIcon icon={faThumbsUp} />
+                          </div>
+                          <div className="like_number">
+                          {tweet.liked}
+                          </div>
+                          </button>
+                        </div>
+                        <div className="tweetreply">
+                        <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
+                        <div>
+                          <FontAwesomeIcon icon={faComment} />
+                        </div>
+                        <div>
+                          {tweet.replynumber}
+                        </div>
+                        </Link>
+                        </div>
+                        <div className="tweetretweet">
+                        <Link href={{pathname: '/retweet', query: { text: tweet.id } }} className="customLink">
+                        <div>
+                        <FontAwesomeIcon icon={faRetweet} />
+                        </div>
+                        <div>
+                          {tweet.retweet}
+                        </div>
+                        </Link>
+                        </div>
+                        <div className="tweetreply">
+                        </div>
+                      </div>
+                      <div className="code">
+                      <div>
+                        <button onClick={() => handleClick(index)}>code</button>
+                      </div>
+                      <div>
+                        {visibleItems.includes(index) && <div>{tweet.code}</div>}
+                      </div>
+                      {user_name === tweet.name ? (
+                        <div>
+                        <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+                        </div>
+                      ):(
+                        null
+                      )}
+                      {user_name === tweet.name ? (
+                        <div>
+                        <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+                        </div>
+                      ):(
+                        null
+                      )}
+                      </div>
+                    <PreviewImage imagename={tweet.figid}/>
+                    </div>
+                  </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="tweet">
+                <div className="user_fig">
+                <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                <PreviewImageFromUser tweetname={tweet.name} />
+                </Link>
+                </div>
+                <div className="tweet_all">
+                <div className="tweet_user">
+                  <Link href={{pathname: "/profile", query: {text: tweet.name} }} className="twitter_profile">
+                  {tweet.username}
+                  </Link>
+                  <div className="retweet_state">
+                    <FontAwesomeIcon icon={faRetweet}/>
+                  retweeted
+                  </div>
+                  <div className="tweetdate">
+                  {tweet.date}
+                </div>
+                </div>
+                  <div className="retweet_comment">{tweet.retweetcomment}</div>
+                  <div className="retweet">
+                    <div className="user_fig">
+                      <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
+                      <PreviewImageFromUser tweetname={ConvertFromIdToName(tweet.retweetto)} />
+                      </Link>
+                    </div>
+                    <div className="tweet_all">
+                      <div className="tweet_user">
+                        <Link href={{pathname: "/profile", query: {text: ConvertFromIdToName(tweet.retweetto)} }} className="twitter_profile">
+                        {tweet.retweettoname}
+                        </Link>
+                        <div className="tweetdate">
+                        {tweet.date}
+                      </div>
+                      </div> 
+                    
+                    <Link href={{pathname: "replysite", query: {text: tweet.id}}} className="customLink">
+                      <div className="tweetcontent">
+                      <h5>{tweet.content}</h5>  
+                      </div>
+                      </Link> 
+                      <div className="tweetoption">
+                      <div className="tweetlike">
+                        <button onClick={() => handlelike(tweet.id)} className="tweet_like">
+                          <div className="like_icon">
+                            <FontAwesomeIcon icon={faThumbsUp} />
+                          </div>
+                          <div className="like_number">
+                          {tweet.liked}
+                          </div>
+                          </button>
+                        </div>
+                        <div className="tweetreply">
+                        <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
+                        <div>
+                          <FontAwesomeIcon icon={faComment} />
+                        </div>
+                        <div>
+                          {tweet.replynumber}
+                        </div>
+                        </Link>
+                        </div>
+                        <div className="tweetretweet">
+                        <Link href={{pathname: '/retweet', query: { text: tweet.id } }} className="customLink">
+                        <div>
+                          <FontAwesomeIcon icon={faRetweet}/>                    </div>
+                        <div>
+                          {tweet.retweet}
+                        </div>
+                        </Link>
+                        </div>                    
+                        <div className="tweetreply">
+                        </div>
+                      </div>
+                      <div className="code">
+                      <div>
+                        <button onClick={() => handleClick(index)}>code</button>
+                      </div>
+                      <div>
+                        {visibleItems.includes(index) && <div>{tweet.code}</div>}
+                      </div>
+                      {user_name === tweet.name ? (
+                        <div>
+                        <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+                        </div>
+                      ):(
+                        null
+                      )}
+                      {user_name === tweet.name ? (
+                        <div>
+                        <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+                        </div>
+                      ):(
+                        null
+                      )}
+                      </div>
+                    <PreviewImage imagename={tweet.figid}/>
+                  </div>
+                  </div>
+                </div>
+              </div>
+              )
+            )
+        )}
+    </div>
+    </div>
+      </div>
             </div>
         </div>
         <div className="user_profile">
@@ -580,6 +857,14 @@ const ProfilePage = () => {
           {displayname}
         </div>
       </div>
+      <Link href="./view" className="view_page">
+      <div>
+        <FontAwesomeIcon icon={faHouse}/>
+      </div>
+      <div>
+        ホーム
+      </div>
+      </Link>
       <Link href="./post" className="post_page">
       <div>
        <FontAwesomeIcon icon={faPenToSquare} />
@@ -596,7 +881,7 @@ const ProfilePage = () => {
         検索
       </div>
       </Link>
-      <Link href={{pathname: '/profile', query: { text: displayname } }} className="profile_page">
+      <Link href={{pathname: '/profile', query: { text: displayId } }} className="profile_page">
       <div>
         <FontAwesomeIcon icon={faUser}/>
       </div>
@@ -605,6 +890,36 @@ const ProfilePage = () => {
       </div>
       </Link>
         
+    </div>
+    <Modal isOpen={isModalOpen} onClose={toggleModal}>
+        <div>プロフィールの変更</div>
+          <div className="register">
+            <form onSubmit={changeprofile}>
+            <label>ユーザー名</label>
+            <input
+            name="displayname"
+            type="text"
+            value={name_changed}
+            onChange={(e) => setName_changed(e.target.value)}
+            >
+            </input>
+              <div>
+                <label>ユーザー画像</label>
+                <Post setFigure_id={setFig_change}/>
+              </div>
+              <label>ステータスメッセージ</label>
+              <input
+              name="status_message"
+              type="text"
+              value={statusmessage_changed}
+              onChange={(e) => setStatusmessage_changed(e.target.value)}
+            >
+              </input>
+              <button>ユーザー情報変更</button>                      
+            </form>
+          </div>
+          <button onClick={toggleModal}>閉じる</button>
+        </Modal>
     </div>
     )
 }
