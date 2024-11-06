@@ -22,6 +22,14 @@ interface Props {
     setDisplayfig: (displayfig: string) => void
     setStatus: (status: string) => void
 }
+function LoadingScreen() {
+  return (
+    <div className="loading-overlay">
+      <div className="spinner"></div>
+    </div>
+  );
+}
+
 export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfig, setStatus}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +37,7 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
   const [loginpassword, setLoginpassword] = useState("")
   const [registername, setRegistername] = useState("")
   const [figure_id, setFigure_id] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   /**
    * googleでログインする
@@ -37,6 +46,7 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
     //setUser_name("riku")
     e.preventDefault()
     try {
+      setIsLoading(true)
         const userCredential =  await signInWithEmailAndPassword(fireAuth, loginemail, loginpassword)
         const user = userCredential.user
         const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -46,26 +56,19 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
           setDisplayfig(userData.figid || "未設定")
           setStatus(userData.status || "未設定")
         }
-        router.push('./view')
-        // console.log("login")
-        // alert("ログインしました")
-        // try {
-        //   router.push('./view')
-        // }
-        // catch (error) {
-        //   alert("cannot router")
-        // }
-        
-        //console.log(setUser_name)
-        //setUser_name(loginemail)
-        //setUser_name("riku")
+        alert("認証されました")
+        handleNavigation("/view")
     } catch(error){
         alert("間違ったメールアドレスまたはパスワード")
+        setIsLoading(false)
     }
   }
-  /**
-   * ログアウトする
-   */
+
+  const handleNavigation = async (url: string) => {
+    setIsLoading(true);
+    await router.push(url)
+    setIsLoading(false)
+  }
   const signOutfromfire = (): void => {
     signOut(fireAuth).then(() => {
       alert("ログアウトしました");
@@ -74,50 +77,11 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
       alert(err);
     });
   };
-
-//   const signUpNormal = async (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault()
-//     try {
-//         const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
-//         const user = userCredential.user
-//         await setDoc(doc(db, "users", user.uid), {
-//           registername: registername,
-//           email: email,
-//           createdAt: serverTimestamp(),
-//           figid: figure_id,
-//           status: "standard"
-//         }).catch((error) => {
-//           console.error("Error writting docment ", error)
-//         })
-//         alert("登録しました")
-//     } catch (err) {
-//         alert(err);
-//     }
-//   }
-//   const signUpPremium = async (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault()
-//     try {
-//         const userCredential = await createUserWithEmailAndPassword(fireAuth,email,password)
-//         const user = userCredential.user
-//         await setDoc(doc(db, "users", user.uid), {
-//           registername: registername,
-//           email: email,
-//           createdAt: serverTimestamp(),
-//           figid: figure_id,
-//           status: "premium"
-//         }).catch((error) => {
-//           console.error("Error writting docment ", error)
-//         })
-//         alert("登録しました")
-//     } catch (err) {
-//         alert(err);
-//     }
-// }
-
-  
-
   return (
     <div>
+      <div>
+        {isLoading && <LoadingScreen />}
+      </div>
       <div className="login">
         <h5 className="login_title">ログイン</h5>
         <form onSubmit={signInfire}>
@@ -135,37 +99,6 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
       <Link href={{pathname: "/register"}} className="register_page">
       ユーザー登録
       </Link>
-
-      {/* <div className="logout">
-        <h5 className="action">ログアウト</h5>
-      <button onClick={signOutfromfire}>
-      ログアウト
-      </button>
-      </div>
-       */}
-
-      {/* <div className="register">
-            <h5 className="action">ユーザー登録</h5>
-            <form onSubmit={signUpNormal}>
-            <div className="form_block">
-            <label>ユーザー名</label>
-            <input name="displayname" value={registername} type="text" onChange={(e) => setRegistername(e.target.value)} style={{color: "black"}}></input>
-            </div>
-            <div className="form_block">
-            <label>メールアドレス:</label>
-            <input name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{color: "black"}}></input>
-            </div>
-            <div className="form_block">
-            <label>パスワード:</label>
-            <input name="password" type="password" value={password} onChange={(e => setPassword(e.target.value))} style={{color: "black"}}></input>
-            </div>
-            <div>
-              <label>ユーザー画像</label>
-              <Post setFigure_id={setFigure_id} />
-            </div>
-            <button>ユーザー登録</button>
-            </form>
-        </div> */}
     </div>
   );
 };

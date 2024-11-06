@@ -15,6 +15,14 @@ type FormProps = {
   router: any;
 }
 
+function LoadingScreen() {
+  return (
+    <div className="loading-overlay">
+      <div className="spinner"></div>
+    </div>
+  );
+}
+
 export const Tweet: React.FC<FormProps> = ({router}) => {
   //name, ageをstateで管理
   //const [name, setName] = useState("");
@@ -26,6 +34,8 @@ export const Tweet: React.FC<FormProps> = ({router}) => {
   const [errorMessage, setErrorMessage] = useState("")
   const [lang, setLang]= useState("")
   const [userid, setUserid] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
+
 
   //Formをsubmitしたら発火する関数
   // useEffect(() => {
@@ -76,23 +86,26 @@ export const Tweet: React.FC<FormProps> = ({router}) => {
     // }
 
     try {
+      setIsLoading(true)
       const result = await fetch(
         "https://hackathon-backend-1012715555694.us-central1.run.app/tweet",
         {
         method: "POST",
         body: JSON.stringify({
+          id: "",
           name: userid,
+          date: "",
+          liked: 0,
           content: tweet,
-          like: 0,
           retweet: 0,
           figid: tweetfig,
           code: code,
           errormessage: errorMessage,
           lang: lang,
-          ReTweet: "",
-          replynumber: 0,
-          retweetto: 0
-          //age: age,
+          replyto: "",
+          replynumber:0,
+          retweetto: "",
+          retweetcomment: ""
         }),
       });
       if (!result.ok) {
@@ -103,16 +116,26 @@ export const Tweet: React.FC<FormProps> = ({router}) => {
       // setAge(0);
       setTweet("")
       setTweetfig("")
-      router.push("../view")
+      alert("Posted")
+      handleNavigation("/view")
       //fetchUsersを呼ぶ
     } catch (err) {
       console.error(err);
+      setIsLoading(false)
     }
   };
+  const handleNavigation = async (url: string) => {
+    setIsLoading(true);
+    await router.push(url)
+    setIsLoading(false)
+  }
 
 
   return (
     <div className="post">
+      <div>
+        {isLoading && <LoadingScreen />}
+      </div>
       <div className="tweet_title">
         Tweet
         {/* user id is{userid} */}

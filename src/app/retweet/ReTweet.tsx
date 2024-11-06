@@ -43,6 +43,15 @@ interface Tweet {
   retweetto: string;
   retweetcomment: string
 }
+
+function LoadingScreen() {
+  return (
+    <div className="loading-overlay">
+      <div className="spinner"></div>
+    </div>
+  );
+}
+
 export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext()
   //name, ageをstateで管理
@@ -56,6 +65,7 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   const [lang, setLang]= useState("")
   const [retweetcomment, setRetweetcomment] = useState("")
   const [user_id, setUser_id] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
   const [tweetto, setTweetto] = useState<Tweet>({id: "", name: "", date: "", liked: 0, content: "", retweet: 0, figid: "", code: "", errormessage: "", lang: "", replyto: "", replynumber: 0, retweetto: "", retweetcomment: ""})
   //Formをsubmitしたら発火する関数
   useEffect(() => {
@@ -108,14 +118,17 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
     const RetweetTo: Tweet| undefined = Tweets.find(tweet => tweet.id === retweetto)
     if (RetweetTo !== undefined) {
       try {
+        setIsLoading(true)
         const result = await fetch(
           "https://hackathon-backend-1012715555694.us-central1.run.app/tweet",
           {
           method: "POST",
           body: JSON.stringify({
+            id: "",
             name: user_id,
+            date: "",
+            loked: 0,
             content: RetweetTo.content,
-            like: 0,
             retweet: 0,
             figid: RetweetTo.figid,
             code: RetweetTo.code,
@@ -136,17 +149,28 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
         // setAge(0);
         setTweet("")
         setTweetfig("")
-        router.push("../view")
+        alert("retweet is posted")
+        handleNavigation("/view")
         //fetchUsersを呼ぶ
       } catch (err) {
         console.error(err);
       }
     } else {
       console.log("Tweet not found")
+      setIsLoading(false)
     }
   };
+  const handleNavigation = async (url: string) => {
+    setIsLoading(true);
+    await router.push(url)
+    setIsLoading(false)
+  }
 
   return (
+    <div>
+      <div>
+        {isLoading && <LoadingScreen />}
+      </div>
     <div className="post_retweet">
       <div className="retweet_title">
         Retweet
@@ -220,6 +244,7 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
         <div className="form_group">
         <button className="button" type={"submit"}><h3>Retweet</h3></button></div>
       </form>
+    </div>
     </div>
   );
 };
