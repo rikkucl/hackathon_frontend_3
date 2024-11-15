@@ -45,17 +45,21 @@ import { AppProvider } from './context';
 import { useAppContext } from './context';
 import PreviewImage from './lib/PreviewImage';
 
+const baseUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "http://localhost:3000";
+
 export const metadata = {
   title: 'Enginner Loutnge of Innovation and Insight',
   description: 'エンジニアのためのコミュニケーションツール',
   openGraph: {
     title: 'デフォルトタイトル',
     description: 'デフォルトのページ説明',
-    url: "https://hackathon-frontend-3-7uq6t18qu-rikkucls-projects.vercel.app",
+    url: `${baseUrl}`,
     siteName: "Enginner Lounge of Innovation and Insight",
     images: [
       {
-        url: 'https://hackathon-frontend-3-7uq6t18qu-rikkucls-projects.vercel.app/images/figure.jpg',
+        url: `${baseUrl}/images/figure.jpg`,
         width: 1200,
         height: 630,
         alt: "Og Image Alt"
@@ -65,9 +69,9 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'デフォルトタイトル',
-    description: 'デフォルトのページ説明',
-    image: 'https://example.com/default-image.jpg',
+    title: 'Enginner Lounge of Innovation and Insight',
+    description: 'エンジニアのためのコミュニケーションツール',
+    image: `${baseUrl}/images/figure.jpg`,
   },
 };
 
