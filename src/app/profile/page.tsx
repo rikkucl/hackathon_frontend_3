@@ -508,17 +508,17 @@ const ProfilePage = () => {
                 )}
 
                 <div className="profilefollow">
-                    <div>
-                        <div>フォローしている人</div>
+                    <div className="background">
+                        <div className="black">フォロー</div>
                         {Object.values(filteredFollows).map((follow) => 
                         <div className="follow">
                             {follow.followedname}
                         </div>
                         )}
                     </div>
-                    
+                    <div>
                     {displayId !== user_name ? (
-                        <div>
+                        <div className="background">
                         {isfollow(displayId, user_name) ? (
                             <div>フォロー済</div>
                         ) : (
@@ -538,8 +538,7 @@ const ProfilePage = () => {
                         )}
                         </div>
                     ) : (
-                      <div>
-                      <div>
+                      <div className="background">
                         {Object.values(filteredFollowreqs).map((followreq) => 
                         <div className="followrequest">
                             <div>{followreq.followerreqname}</div>
@@ -547,8 +546,8 @@ const ProfilePage = () => {
                         </div>
                         )}
                         </div>
-                        </div>
                     )}
+                    </div>
                 </div>    
             </div>
             <div className="profilecontent">

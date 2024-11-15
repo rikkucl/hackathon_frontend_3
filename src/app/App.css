@@ -46,6 +46,11 @@
     transform: rotate(360deg);
   }
 }
+.background {
+  background: rgba(255, 255, 255, 0.1); /* 半透明の背景 */
+  border: 1px solid rgba(255, 255, 255, 0.5); /* 薄いボーダー */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* やわらかいシャドウ */
+}
 
 .loading-overlay {
   position: fixed;
@@ -310,6 +315,7 @@ button {
   font-size: 16px;
   height: 50px;
   border: none;
+  color: inherit;
   background-color: transparent;
   display: flex;
   flex-direction: column;
@@ -367,6 +373,9 @@ button {
   width: 70%;
   display: flex;
   flex-direction: row;
+}
+.black {
+  color: #333;
 }
 
 
@@ -459,6 +468,17 @@ button {
   display: flex;
   flex-direction: row;
 }
+
+.profilefollow div {
+  margin-right: 5px;
+}
+
+.followrequest {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 
 .profilecontent {
   display: flex;

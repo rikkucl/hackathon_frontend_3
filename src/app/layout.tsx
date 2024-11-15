@@ -40,9 +40,36 @@
 
 // app/layout.tsx
 import React, { Children } from 'react';
+import { ReactNode } from "react";
 import { AppProvider } from './context';
 import { useAppContext } from './context';
 import PreviewImage from './lib/PreviewImage';
+
+export const metadata = {
+  title: 'Enginner Loutnge of Innovation and Insight',
+  description: 'エンジニアのためのコミュニケーションツール',
+  openGraph: {
+    title: 'デフォルトタイトル',
+    description: 'デフォルトのページ説明',
+    url: "https://hackathon-frontend-3-7uq6t18qu-rikkucls-projects.vercel.app",
+    siteName: "Enginner Lounge of Innovation and Insight",
+    images: [
+      {
+        url: 'https://hackathon-frontend-3-7uq6t18qu-rikkucls-projects.vercel.app/images/figure.jpg',
+        width: 1200,
+        height: 630,
+        alt: "Og Image Alt"
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'デフォルトタイトル',
+    description: 'デフォルトのページ説明',
+    image: 'https://example.com/default-image.jpg',
+  },
+};
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
@@ -65,6 +92,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
+// export default function Layout({ children }: { children: React.ReactNode }) {
+//     return (
+//     <AppProvider>
+//       <html lang="en">
+//         <head>
+//           <title>Assembly For Engineer</title>
+//         </head>
+//         <body>
+//           {/* <header>
+//             <h1>Welcome</h1>
+//           </header> */}
+//           <main>{children}</main>
+//           {/* <footer>
+//             <p>© 2024 My Next.js App</p>
+//           </footer> */}
+//         </body>
+//       </html>
+//     </AppProvider>
+//   );
+// }
+
+// export default Layout;
 // const Layout = ({children}: {children: React.ReactNode}) => {
 //   const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig} = useAppContext()
 //   return (
