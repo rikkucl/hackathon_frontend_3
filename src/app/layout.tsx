@@ -53,13 +53,13 @@ export const metadata = {
   title: 'Enginner Loutnge of Innovation and Insight',
   description: 'エンジニアのためのコミュニケーションツール',
   openGraph: {
-    title: 'デフォルトタイトル',
-    description: 'デフォルトのページ説明',
+    title: "Enginner Lounge of Innovation and Insight",
+    description: 'エンジニアのための新たなコミュニケーションツール',
     url: `${baseUrl}`,
     siteName: "Enginner Lounge of Innovation and Insight",
     images: [
       {
-        url: `${baseUrl}/images/figure.jpg`,
+        url: `${baseUrl}/images/logo.jpg`,
         width: 1200,
         height: 630,
         alt: "Og Image Alt"
@@ -71,7 +71,7 @@ export const metadata = {
     card: 'summary_large_image',
     title: 'Enginner Lounge of Innovation and Insight',
     description: 'エンジニアのためのコミュニケーションツール',
-    image: `${baseUrl}/images/figure.jpg`,
+    image: `${baseUrl}/images/logo.jpg`,
   },
 };
 
@@ -79,13 +79,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (
     <AppProvider>
       <html lang="en">
-        <head>
-          <title>Assembly For Engineer</title>
+        <head className='app'>
+          <title>Enginner Lounge of Innovation and Insight</title>
         </head>
         <body>
-          {/* <header>
-            <h1>Welcome</h1>
-          </header> */}
+          <header>
+            <h1>Enginner Longe of Innovation and Insight</h1>
+          </header>
           <main>{children}</main>
           {/* <footer>
             <p>© 2024 My Next.js App</p>
