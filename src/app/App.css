@@ -17,15 +17,16 @@ header {
   font-size: 24px;      /* 見出しのフォントサイズを大きく */
   color: #333;          /* 色をダークグレーに変更 */
 }
-
+/* 
 .app_profile {
   overflow: auto;
 
-}
+} */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
 }
+
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -286,8 +287,15 @@ button {
 .user_container {
   position: absolute;
   left: 30%;
+  top: 10%;
   height: 100vh;
   width: 50%;
+  /* background-color: transparent; */
+  overflow: auto;
+}
+
+.user_container_pro {
+  height: 100vh;
   /* background-color: transparent; */
   overflow: auto;
 }
@@ -404,6 +412,16 @@ button {
   margin-right: 5px;
 }
 
+.app-name {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
+  left: 5%;
+  top: 0%;
+  display: flex;
+  flex-direction: column;
+}
+
 .view_page {
   color: inherit;
   text-decoration: none;
@@ -450,12 +468,53 @@ button {
   width: 100%;
 }
 
-.profile {
+.site {
+  position: absolute;
+  left: 20%;
+  top: 10%;
+  height: 100vh;
+  width: 80%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  height: 80vh;
+  justify-content: center;
+  overflow: visible;
+}
+
+.origin {
+  position: sticky;
+}
+
+.rep {
+  display: flex;
+  flex-direction: row;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.user_container_ori {
+  width: 90%;
+  /* background-color: transparent; */
+  margin-bottom: 20px;
+}
+
+.user_container_rep {
+  width: 90%;
+  height: 100vh;
+  /* background-color: transparent; */
+  overflow: auto;
+}
+.profile {
+  position: absolute;
+  left: 30%;
+  top: 10%;
+  height: 100vh;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  /* justify-content: center; */
+  align-items: center; 
+  overflow: visible;
 }
 
 .profileheader {
@@ -490,10 +549,12 @@ button {
 .profilecontent {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  overflow: auto;
+  /* flex: 1; */
+  /* overflow: auto; */
   /* flex-grow: 1; */
   padding: 19px;
+  height: 50%;
+  overflow: hidden;
 }
 
 .post {
@@ -582,4 +643,9 @@ button {
   padding-bottom: 30px;
   width: 50%;
   height: 3vh;
+}
+
+
+.icon {
+  transform: scaleX(-1) rotate(90deg);
 }

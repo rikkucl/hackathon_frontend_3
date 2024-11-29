@@ -485,7 +485,7 @@ const ProfilePage = () => {
     
     return (
       <div className="app">
-        <div className="app_profile">
+        {/* <div className="app_profile"> */}
         <div className="profile">
             <div className="profileheader">
                 <div className="profilename">
@@ -539,6 +539,7 @@ const ProfilePage = () => {
                         </div>
                     ) : (
                       <div className="background">
+                        <div className="black">フォローリクエスト</div>
                         {Object.values(filteredFollowreqs).map((followreq) => 
                         <div className="followrequest">
                             <div>{followreq.followerreqname}</div>
@@ -553,7 +554,7 @@ const ProfilePage = () => {
             <div className="profilecontent">
                 <div>ポスト一覧</div>
                 <div>
-                <div className="user_container">
+                <div className="user_container_pro">
                 <div className="scroll">
                 {Object.values(filteredTweets).map((tweet, index) =>
             tweet.retweetto === "" ? (
@@ -611,28 +612,32 @@ const ProfilePage = () => {
                   <div className="tweetreply">
                   </div>
                 </div>
-                <div className="code">
-                <div>
-                  <button onClick={() => handleClick(index)}>code</button>
-                </div>
-                <div>
-                  {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                </div>
-                {user_name === tweet.name ? (
-                  <div>
-                  <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                  </div>
-                ):(
-                  null
-                )}
-                {user_name === tweet.name ? (
-                  <div>
-                  <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                  </div>
-                ):(
-                  null
-                )}
-                </div>
+                {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {displayId === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {displayId === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                 <PreviewImage imagename={tweet.figid}/>
                 </div>
             </div>
@@ -711,28 +716,32 @@ const ProfilePage = () => {
                         <div className="tweetreply">
                         </div>
                       </div>
-                      <div className="code">
-                      <div>
-                        <button onClick={() => handleClick(index)}>code</button>
-                      </div>
-                      <div>
-                        {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                      </div>
-                      {user_name === tweet.name ? (
-                        <div>
-                        <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                        </div>
-                      ):(
-                        null
-                      )}
-                      {user_name === tweet.name ? (
-                        <div>
-                        <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                        </div>
-                      ):(
-                        null
-                      )}
-                      </div>
+                      {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {displayId === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {displayId === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                     <PreviewImage imagename={tweet.figid}/>
                     </div>
                   </div>
@@ -813,28 +822,32 @@ const ProfilePage = () => {
                         <div className="tweetreply">
                         </div>
                       </div>
-                      <div className="code">
-                      <div>
-                        <button onClick={() => handleClick(index)}>code</button>
-                      </div>
-                      <div>
-                        {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                      </div>
-                      {user_name === tweet.name ? (
-                        <div>
-                        <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                        </div>
-                      ):(
-                        null
-                      )}
-                      {user_name === tweet.name ? (
-                        <div>
-                        <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                        </div>
-                      ):(
-                        null
-                      )}
-                      </div>
+                      {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {displayId === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {displayId === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                     <PreviewImage imagename={tweet.figid}/>
                   </div>
                   </div>
@@ -848,6 +861,10 @@ const ProfilePage = () => {
       </div>
             </div>
         </div>
+        <h1 className="app-name">
+        Engineer Lounge of Innovation and Insight
+      </h1>
+      
         <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>
@@ -889,7 +906,7 @@ const ProfilePage = () => {
       </div>
       </Link>
         
-    </div>
+    {/* </div> */}
     <Modal isOpen={isModalOpen} onClose={toggleModal}>
         <div>プロフィールの変更</div>
           <div className="register">

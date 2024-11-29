@@ -338,7 +338,10 @@ function App() {
               <div className="tweetreply">
               </div>
             </div>
-            <div className="code">
+            {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
             <div>
               <button onClick={() => handleClick(index)}>code</button>
             </div>
@@ -360,6 +363,7 @@ function App() {
               null
             )}
             </div>
+            )}
             <PreviewImage imagename={tweet.figid}/>
             </div>
         </div>
@@ -439,28 +443,32 @@ function App() {
                     <div className="tweetreply">
                     </div>
                   </div>
-                  <div className="code">
-                  <div>
-                  <button onClick={() => handleClick(index)}>code</button>
-                  </div>
-                  <div>
-                  {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                  </div>
-                  {user_Id === tweet.name ? (
-                    <div>
-                    <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                {user_Id === tweet.name ? (
-                <div>
-                <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                </div>
-                ):(
-                  null
-                )}
-                </div>
+                  {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {user_Id === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {user_Id === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                 <PreviewImage imagename={tweet.figid}/>
               </div>
               </div>
@@ -541,28 +549,32 @@ function App() {
                     <div className="tweetreply">
                     </div>
                   </div>
-                  <div className="code">
-                  <div>
-                    <button onClick={() => handleClick(index)}>code</button>
-                  </div>
-                  <div>
-                    {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                  </div>
-                  {user_Id === tweet.name ? (
-                    <div>
-                    <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                  {user_Id === tweet.name ? (
-                    <div>
-                    <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                  </div>
+                  {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {user_Id === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {user_Id === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                 <PreviewImage imagename={tweet.figid}/>
               </div>
               </div>
@@ -576,6 +588,9 @@ function App() {
 
     </div>
       </div>
+      <h1 className="app-name">
+        Engineer Lounge of Innovation and Insight
+      </h1>
       <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>

@@ -328,7 +328,10 @@ const SearchPage = () => {
               <div className="tweetreply">
               </div>
             </div>
-            <div className="code">
+            {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
             <div>
               <button onClick={() => handleClick(index)}>code</button>
             </div>
@@ -350,6 +353,7 @@ const SearchPage = () => {
               null
             )}
             </div>
+            )}
             <PreviewImage imagename={tweet.figid}/>
             </div>
         </div>
@@ -428,28 +432,32 @@ const SearchPage = () => {
                     <div className="tweetreply">
                     </div>
                   </div>
-                  <div className="code">
-                  <div>
-                    <button onClick={() => handleClick(index)}>code</button>
-                  </div>
-                  <div>
-                    {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                  </div>
-                  {user_id === tweet.name ? (
-                    <div>
-                    <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                  {user_id === tweet.name ? (
-                    <div>
-                    <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                  </div>
+                  {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {user_id === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {user_id === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                 <PreviewImage imagename={tweet.figid}/>
                 </div>
               </div>
@@ -530,28 +538,32 @@ const SearchPage = () => {
                     <div className="tweetreply">
                     </div>
                   </div>
-                  <div className="code">
-                  <div>
-                    <button onClick={() => handleClick(index)}>code</button>
-                  </div>
-                  <div>
-                    {visibleItems.includes(index) && <div>{tweet.code}</div>}
-                  </div>
-                  {user_id === tweet.name ? (
-                    <div>
-                    <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                  {user_id === tweet.name ? (
-                    <div>
-                    <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
-                    </div>
-                  ):(
-                    null
-                  )}
-                  </div>
+                  {tweet.code === "" ? (
+              null
+            ):(
+              <div className="code">
+            <div>
+              <button onClick={() => handleClick(index)}>code</button>
+            </div>
+            <div>
+              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            </div>
+            {user_id === tweet.name ? (
+              <div>
+              <button onClick={() => handlegemini(tweet.id)}>ask gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            {user_id === tweet.name ? (
+              <div>
+              <button onClick={() => executeOnGemini(tweet.id)}>execute_on_gemini</button>
+              </div>
+            ):(
+              null
+            )}
+            </div>
+            )}
                 <PreviewImage imagename={tweet.figid}/>
               </div>
               </div>
@@ -565,6 +577,10 @@ const SearchPage = () => {
     {/* <Link href={{pathname: "../view"}}>
     投稿
     </Link> */}
+    <h1 className="app-name">
+        Engineer Lounge of Innovation and Insight
+      </h1>
+      
     <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>

@@ -83,9 +83,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <title>Enginner Lounge of Innovation and Insight</title>
         </head>
         <body>
-          <header>
+          {/* <header>
             <h1>Enginner Longe of Innovation and Insight</h1>
-          </header>
+          </header> */}
           <main>{children}</main>
           {/* <footer>
             <p>© 2024 My Next.js App</p>

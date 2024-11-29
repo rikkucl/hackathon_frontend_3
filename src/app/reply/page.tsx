@@ -83,6 +83,10 @@ const PostPage = () => {
     return (
         <div className="App">
         <ReTweet router={router} tweetto_id={tweet_id} />
+        <h1 className="app-name">
+        Engineer Lounge of Innovation and Insight
+      </h1>
+      
         <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>

@@ -191,7 +191,7 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
       </div>
     <div className="post_retweet">
       <div className="retweet_title">
-        Retweet
+        RePost
       </div>
     <div className="tweet">
           <div className="user_fig">

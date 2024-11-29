@@ -137,7 +137,7 @@ export const Tweet: React.FC<FormProps> = ({router}) => {
         {isLoading && <LoadingScreen />}
       </div>
       <div className="tweet_title">
-        Tweet
+        Post
         {/* user id is{userid} */}
       </div>
     <form onSubmit={onSubmit} className="tweet_post">

@@ -38,6 +38,9 @@ const PostPage = () => {
     return (
         <div className="App">
         <Tweet router={router}/>
+        <h1 className="app-name">
+        Engineer Lounge of Innovation and Insight
+      </h1>
         <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>
