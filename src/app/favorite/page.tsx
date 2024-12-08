@@ -113,7 +113,7 @@ function App() {
       fetchLike()
       fetchFavorite()
     }
-  }, [])
+  }, [user_Id])
 
   const fetchLike = async () => {
     try{
