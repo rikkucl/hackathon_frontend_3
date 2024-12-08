@@ -252,6 +252,7 @@ function App() {
           }),
         })
         fetchTweet()
+        fetchLike()
     }catch (err){
       console.log(err)
     }
@@ -269,6 +270,7 @@ function App() {
           }),
         })
         fetchTweet()
+        fetchFavorite()
     } catch (err) {
       console.log(err)
     }
