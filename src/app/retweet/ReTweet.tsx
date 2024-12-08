@@ -89,17 +89,17 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
     } else {
       console.log("cannot find user")
     }
-  })
+  }, [])
   useEffect (() => {
     findTweet(retweetto)
-  })
+  }, [])
   useEffect(() => {
     // console.log("getlike")
     if (user_id !== ""){
       fetchLike()
       fetchFavorite()
     }
-  })
+  }, [])
 
   const fetchLike = async () => {
     try{

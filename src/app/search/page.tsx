@@ -96,14 +96,14 @@ const SearchPage = () => {
       } else {
         console.log("cannot find user")
       }
-    })
+    }, [])
     useEffect(() => {
       // console.log("getlike")
       if (user_id !== ""){
         fetchLike()
         fetchFavorite()
       }
-    })
+    }, [user_id])
   
     const fetchLike = async () => {
       try{
@@ -165,7 +165,7 @@ const SearchPage = () => {
 
   useEffect(() => {
     getPrivate()
-  })
+  }, [])
 
   const getPrivate = async () => {
     const userCollection = collection(db, "users");
@@ -401,7 +401,7 @@ const SearchPage = () => {
   
   useEffect(() => {
     fetchFollow()
-  })
+  }, [])
 
   const toggleSidebar = () => {
     setIsvisible(!isvisible)

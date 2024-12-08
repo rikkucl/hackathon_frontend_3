@@ -103,7 +103,7 @@ const Replypage = () => {
         } else {
           setIsLoggin(false)
         }
-      })
+      }, )
       const user = auth.currentUser
       if (user) {
         const uid = user.uid
@@ -112,7 +112,7 @@ const Replypage = () => {
       } else {
         console.log("cannot find user")
       }
-    })
+    }, [])
     useEffect(() => {
       const getUserData = async () => {
         const data = await fetchNamesFromTweets(Tweets)
@@ -127,7 +127,7 @@ const Replypage = () => {
         fetchLike()
         fetchFavorite()
       }
-    })
+    }, [])
   
     const fetchLike = async () => {
       try{
@@ -181,7 +181,7 @@ const Replypage = () => {
 
   useEffect(() => {
     getPrivate()
-  })
+  }, [])
 
   const getPrivate = async () => {
     const userCollection = collection(db, "users");
@@ -267,7 +267,7 @@ const Replypage = () => {
   }
   useEffect(() => {
     fetchFollow()
-  })
+  }, [])
 
 
   const publicTweets = userNames.filter(tweet => privateIds?.every(id => id !== tweet.name) || isfollow(displayId, tweet.name) || displayId === tweet.name);

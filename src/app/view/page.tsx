@@ -110,8 +110,7 @@ function App() {
   //起動時に一回だけ実行
   useEffect(() =>{
     fetchTweet()
-  }
-  )
+  }, [])
   onAuthStateChanged(fireAuth, user => {
     setLoginUser(user);
   });
@@ -121,11 +120,11 @@ function App() {
       fetchLike()
       fetchFavorite()
     }
-  })
+  }, [user_Id])
 
   useEffect(() => {
     getPrivate()
-  })
+  }, [])
 
   const getPrivate = async () => {
     const userCollection = collection(db, "users");
@@ -423,7 +422,7 @@ function App() {
   }
   useEffect(() => {
     fetchFollow()
-  })
+  }, [])
 
 
   const filterdTweets = userNames.filter(tweet => privateIds?.every(id => id !== tweet.name) || isfollow(user_Id, tweet.name) || user_Id === tweet.name);

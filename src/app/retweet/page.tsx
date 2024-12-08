@@ -65,13 +65,13 @@ const PostPage = () => {
       } else {
         console.log("cannot find user")
       }
-    })
+    }, [])
     useEffect(() => {
       // console.log("getlike")
       if (displayid !== ""){
         fetchLike()
       }
-    })
+    }, [displayid])
   
     const fetchLike = async () => {
       try{

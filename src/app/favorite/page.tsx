@@ -99,12 +99,11 @@ function App() {
     } else {
       console.log("cannot find user")
     }
-  })
+  }, [])
   //起動時に一回だけ実行
   useEffect(() =>{
     fetchTweet()
-  }
-  )
+  }, [])
   onAuthStateChanged(fireAuth, user => {
     setLoginUser(user);
   });
@@ -114,7 +113,7 @@ function App() {
       fetchLike()
       fetchFavorite()
     }
-  })
+  }, [])
 
   const fetchLike = async () => {
     try{

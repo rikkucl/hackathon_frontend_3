@@ -79,7 +79,7 @@ const PostPage = () => {
       } else {
         console.log("cannot find user")
       }
-    })
+    }, [])
     const fetchUser = async (uid: string) => {
       try {
         const userDoc = await getDoc(doc(db, "users", uid));

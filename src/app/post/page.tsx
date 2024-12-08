@@ -39,7 +39,7 @@ const PostPage = () => {
       } else {
         setIsLoggin(false)
       }
-    })
+    }, )
     const user = auth.currentUser
     if (user) {
       const uid = user.uid
@@ -49,7 +49,7 @@ const PostPage = () => {
     } else {
       console.log("cannot find user")
     }
-  })
+  }, [])
   const signOutfromfire = (): void => {
     signOut(fireAuth).then(() => {
       setDisplayname("")

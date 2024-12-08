@@ -133,7 +133,7 @@ const ProfilePage = () => {
       } else {
         console.log("cannot find user")
       }
-    })
+    }, [])
 
     useEffect(() => {
         const querystring = window.location.search;
@@ -263,14 +263,14 @@ const ProfilePage = () => {
 
     useEffect(() => {
         fetchFollow()
-    })
+    }, [])
     useEffect(() => {
       // console.log("getlike")
       if (displayId !== ""){
         fetchLike()
         fetchFavorite()
       }
-    })
+    }, [])
   
     const fetchLike = async () => {
       try{
