@@ -251,6 +251,7 @@ const SearchPage = () => {
               }),
             })
             fetchTweet()
+            fetchLike()
         }catch (err){
           console.log(err)
         }
@@ -268,6 +269,7 @@ const SearchPage = () => {
               }),
             })
             fetchTweet()
+            fetchFavorite
         } catch (err) {
           console.log(err)
         }

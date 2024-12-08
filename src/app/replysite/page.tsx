@@ -311,6 +311,7 @@ const Replypage = () => {
               }),
             })
             fetchTweet()
+            fetchLike()
         }catch (err){
           console.log(err)
         }
@@ -327,6 +328,7 @@ const Replypage = () => {
               }),
             })
             fetchTweet()
+            fetchFavorite
         } catch (err) {
           console.log(err)
         }

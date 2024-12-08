@@ -233,6 +233,30 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
     await router.push(url)
     setIsLoading(false)
   }
+  const fetchTweet = async () => {
+    try {
+      const res = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/tweet",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      if (!res.ok) {
+        console.log(res)
+        throw Error('Failed to fetch users: {res.status}');
+      }
+      const data:Tweet[] = await res.json();
+      setTweets(data)
+      //const data:User[] = await res.json();
+      //setUsers(data)
+    }catch (err) {
+      console.log(err)
+    }
+  }
+
   const handlelike = async (id: string) => {
     try {
       const response = await fetch(
@@ -247,7 +271,8 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
             user_id: displayId,
           }),
         })
-        // fetchTweet()
+        fetchTweet()
+        fetchLike()
     }catch (err){
       console.log(err)
     }
@@ -263,7 +288,8 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
             user_id: displayId,
           }),
         })
-        // fetchTweet()
+        fetchTweet()
+        fetchFavorite()
     } catch (err) {
       console.log(err)
     }

@@ -568,6 +568,7 @@ const ProfilePage = () => {
               }),
             })
             fetchTweet()
+            fetchLike()
         }catch (err){
           console.log(err)
         }
@@ -584,6 +585,7 @@ const ProfilePage = () => {
               }),
             })
             fetchTweet()
+            fetchFavorite
         } catch (err) {
           console.log(err)
         }
