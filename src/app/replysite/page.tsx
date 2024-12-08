@@ -328,7 +328,7 @@ const Replypage = () => {
               }),
             })
             fetchTweet()
-            fetchFavorite
+            fetchFavorite()
         } catch (err) {
           console.log(err)
         }

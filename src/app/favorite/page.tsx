@@ -249,7 +249,7 @@ function App() {
           }),
         })
         fetchTweet()
-        fetchFavorite
+        fetchFavorite()
     } catch (err) {
       console.log(err)
     }

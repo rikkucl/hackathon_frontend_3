@@ -269,7 +269,7 @@ const SearchPage = () => {
               }),
             })
             fetchTweet()
-            fetchFavorite
+            fetchFavorite()
         } catch (err) {
           console.log(err)
         }

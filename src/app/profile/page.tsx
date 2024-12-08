@@ -585,7 +585,7 @@ const ProfilePage = () => {
               }),
             })
             fetchTweet()
-            fetchFavorite
+            fetchFavorite()
         } catch (err) {
           console.log(err)
         }
