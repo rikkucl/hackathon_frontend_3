@@ -17,7 +17,9 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faComment } from "@fortawesome/free-solid-svg-icons";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { faHouse} from "@fortawesome/free-solid-svg-icons";
+import PreviewImage_square from "../lib/PreviewImage_square";
 
 
 
@@ -43,6 +45,12 @@ interface Tweet {
   retweetto: string;
   retweetcomment: string
 }
+interface Like {
+  tweet_id: string
+}
+interface Favorite {
+  tweet_id: string
+}
 
 function LoadingScreen() {
   return (
@@ -66,6 +74,9 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   const [retweetcomment, setRetweetcomment] = useState("")
   const [user_id, setUser_id] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
+  const [likes, setLikes] = useState<Like[]>([])
+  const [favorites, setFavorites] = useState<Favorite[]>([])
+
   const [tweetto, setTweetto] = useState<Tweet>({id: "", name: "", date: "", liked: 0, content: "", retweet: 0, figid: "", code: "", errormessage: "", lang: "", replyto: "", replynumber: 0, retweetto: "", retweetcomment: ""})
   //Formをsubmitしたら発火する関数
   useEffect(() => {
@@ -82,6 +93,63 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
   useEffect (() => {
     findTweet(retweetto)
   })
+  useEffect(() => {
+    // console.log("getlike")
+    if (user_id !== ""){
+      fetchLike()
+      fetchFavorite()
+    }
+  })
+
+  const fetchLike = async () => {
+    try{
+      const res = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/getlike",
+        {
+            method: "POST",
+            body: JSON.stringify({
+              user_id: user_id
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }
+    );
+    if (!res.ok) {
+        console.log(res)
+        throw Error("Failed to fetch follows: {res.status}");
+    }
+    const data:Like[] = await res.json();
+    setLikes(data)
+    // console.log("Likes is ", likes)
+  } catch (err) {
+    console.log(err)
+  }}
+  
+  const fetchFavorite = async () => {
+    try{
+      const res = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/getfavorite",
+        {
+            method: "POST",
+            body: JSON.stringify({
+              user_id: user_id
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }
+    );
+    if (!res.ok) {
+        console.log(res)
+        throw Error("Failed to fetch follows: {res.status}");
+    }
+    const data:Favorite[] = await res.json();
+    setFavorites(data)
+    // console.log("Likes is ", likes)
+  } catch (err) {
+    console.log(err)
+  }}
   
   const findTweet = (id: string) => {
     const foundTweet: Tweet|undefined = Tweets.find(tweet => tweet.id === id)
@@ -108,6 +176,21 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
         })
         // fetchTweet()
     }catch (err){
+      console.log(err)
+    }
+  }
+  const handlefavorite = async (id: string) => {
+    try {
+      const res = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/favorite", 
+        {
+          method: "POST",
+          body: JSON.stringify({
+            tweet_id: id,
+            user_id: user_id,
+          }),
+        })
+    } catch (err) {
       console.log(err)
     }
   }
@@ -197,14 +280,14 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
             </Link> 
             <div className="tweetoption">
             <div className="tweetlike">
-                <button onClick={() => handlelike(tweetto.id)} className="tweet_like">
+                <div onClick={() => handlelike(tweetto.id)} className="tweet_like">
                   <div className="like_icon">
-                    <FontAwesomeIcon icon={faThumbsUp} />
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweetto.id) ? "liked":""}`} />
                   </div>
                   <div className="like_number">
                   {tweetto.liked}
                   </div>
-                  </button>
+                  </div>
                 </div>
               <div className="tweetreply">
               <Link href={{pathname: '/reply', query: { text: tweetto.id } }} className="customLink">
@@ -226,10 +309,15 @@ export const ReTweet: React.FC<FormProps> = ({router, retweetto}) => {
               </div>
               </Link>
               </div>
-              <div className="tweetreply">
+              <div className="tweet_favorite">
+                <div onClick={() => handlefavorite(tweetto.id)} className="tweet_favorite">
+                  <div className="favorite_icon">
+                    <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweetto.id) ? "favorited":""}`}/>
+                  </div>
+                </div>
               </div>
             </div>
-            <PreviewImage imagename={tweetto.figid}/>
+            <PreviewImage_square imagename={tweetto.figid}/>
             </div>
         </div>
         <form style={{ display: "flex", flexDirection: "column" , alignItems: "center"}} onSubmit={RetweetWithComment}>

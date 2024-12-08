@@ -4,14 +4,18 @@ import React from "react"
 import PreviewImage from "../lib/PreviewImage"
 import "../App.css"
 import { useEffect } from "react"
-import { getDoc, doc, updateDoc } from "firebase/firestore"
 import { db } from "../lib/firebase"
 import { useState } from "react"
-import { getAuth } from "firebase/auth"
+import { getAuth, reauthenticateWithCredential, updatePassword } from "firebase/auth"
 import PreviewImageFromUser from "../lib/PreviewImageFromUser"
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import Link from "next/link"
 import Modal from "./Modal"
 import Post from "../register/ProfileFigure"
+import { fireAuth } from "../lib/firebase"
+import { onAuthStateChanged } from "firebase/auth"
+import { getFirestore, collection, query, where, getDocs, getDoc, doc, namedQuery } from "firebase/firestore";
+import { updateDoc } from "firebase/firestore"
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
@@ -20,7 +24,21 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faComment } from "@fortawesome/free-solid-svg-icons";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons"
+import { faHeart } from "@fortawesome/free-solid-svg-icons"
 import { faHouse } from "@fortawesome/free-solid-svg-icons"
+import { faRightFromBracket, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { text } from "stream/consumers"
+import { faStar } from "@fortawesome/free-solid-svg-icons"
+import { EmailAuthProvider } from "firebase/auth/web-extension"
+
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
+import go from 'react-syntax-highlighter/dist/esm/languages/hljs/go';
+import PreviewImage_square from "../lib/PreviewImage_square"
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -56,6 +74,18 @@ interface Follow {
     followername?: string;
     followedname?: string;
 }
+interface Like {
+  tweet_id: string
+}
+interface Favorite {
+  tweet_id: string
+}
+interface Follow {
+  follower: string;
+  followed: string;
+  followername?: string;
+  followedname?: string;
+}
 
 const ProfilePage = () => {
     const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext()
@@ -63,7 +93,7 @@ const ProfilePage = () => {
     const [user_fig, setUserfig] = useState<string>("")
     const [displayId, setDisplayId] = useState<string>("")
     const [visibleItems, setVisibleItems] = useState<number[]>([]);
-    const [isModalOpen, setModalOpen] = useState(false)
+    const [isModalOpen, setModalOpen] = useState<string>("")
     const [fig_changed, setFig_change] = useState<string>("")
     const [statusmessage, setStatusmessage] = useState<string>("")
     const [statusmessage_changed, setStatusmessage_changed] = useState<string>("")
@@ -72,8 +102,29 @@ const ProfilePage = () => {
     const [follows_, setFollows_] = useState<Follow[]>([])
     const [followreqs_, setFollowreqs_] = useState<Followreq[]>([])
     const [username, setUsername] = useState<string>("")
+    const [isLoggin, setIsLoggin] = useState(false);
+    const [likes, setLikes] = useState<Like[]>([]);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [favorites, setFavorites] = useState<Favorite[]>([])
+    const [pub, setPub] = useState<string>("")
+    const [pub_changed, setPub_changed] = useState<string>("")
+    const [privateIds, setPrivateIds] = useState<string[]>([])
+    const [isvisible, setIsvisible] = useState(false) 
+
+
+
+
+
     useEffect(() => {
       const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsLoggin(true);
+        } else {
+          setIsLoggin(false)
+        }
+      })
       const user = auth.currentUser
       if (user) {
         const uid = user.uid
@@ -96,13 +147,17 @@ const ProfilePage = () => {
 
     useEffect(() => {
       fetchUser_(user_name)
-    })
-
+    }, [user_name])
+    
     const fetchUser_ = async (uid: string) => {
       try {
         const userDoc = await getDoc(doc(db, "users", uid));
         if (userDoc.exists()) {
           setUsername(userDoc.data().registername)
+          const userPublicity = userDoc.data()?.publicity;
+          if (userPublicity !== undefined) {
+            setPub(userPublicity);
+          }
         } else {
           setDisplayfig("")
         }
@@ -110,10 +165,47 @@ const ProfilePage = () => {
         console.log("error happened", err)
       }
     }
-    const filteredTweets = usernames.filter(tweet => {
-        const regex = new RegExp(user_name, 'i');
-        return regex.test(tweet.name)
-    })
+    
+  const fetchFavorite = async () => {
+    try{
+      const res = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/getfavorite",
+        {
+            method: "POST",
+            body: JSON.stringify({
+              user_id: displayId
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }
+    );
+    if (!res.ok) {
+        console.log(res)
+        throw Error("Failed to fetch follows: {res.status}");
+    }
+    const data:Favorite[] = await res.json();
+    setFavorites(data)
+    // console.log("Likes is ", likes)
+  } catch (err) {
+    console.log(err)
+  }}
+
+  useEffect(() => {
+    getPrivate()
+  })
+
+  const getPrivate = async () => {
+    const userCollection = collection(db, "users");
+    const q = query(userCollection, where("publicity", "==", "private"))
+    try {
+      const querySnapshot = await getDocs(q)
+      setPrivateIds(querySnapshot.docs.map(doc => doc.id))
+    }catch (error) {
+      console.log('Error getting documents: ', error)
+    }
+  }
+
     const fetchNamesFromTweets = async (Objects: Tweet[]) => {
       const names = await Promise.all(
         Objects.map(async (tweet) => {
@@ -125,14 +217,25 @@ const ProfilePage = () => {
           else {
             const name = await fetchName(tweet.name);
             const retweettoname = await fetchName(ConvertFromIdToName(tweet.retweetto))
-            console.log("tweet.retweetto is",tweet.retweetto)
-            console.log("retweettoname is",retweettoname)
+            // console.log("tweet.retweetto is",tweet.retweetto)
+            // console.log("retweettoname is",retweettoname)
             return { ...tweet, username: name, retweettoname: retweettoname}
           }
         })
       )
       return names;
     }
+  
+    const signOutfromfire = (): void => {
+      signOut(fireAuth).then(() => {
+        setDisplayname("")
+        setDisplayId("")
+        setDisplayfig("")
+        alert("ログアウトしました");
+      }).catch(err => {
+        alert(err);
+      });
+    };
     useEffect(() => {
       const getUserData = async () => {
         const data = await fetchNamesFromTweets(Tweets)
@@ -144,7 +247,7 @@ const ProfilePage = () => {
     const fetchName = async (uid: string) => {
       try {
         const userDoc = await getDoc(doc(db, "users", uid));
-        console.log(uid)
+        // console.log(uid)
         if (userDoc.exists()) {
           return userDoc.data().registername
         } else {
@@ -152,7 +255,7 @@ const ProfilePage = () => {
           return ""
         }
       } catch (err) {
-        console.log(uid)
+        // console.log(uid)
         console.log("error happened", err)
         return ""
       }
@@ -161,6 +264,65 @@ const ProfilePage = () => {
     useEffect(() => {
         fetchFollow()
     })
+    useEffect(() => {
+      // console.log("getlike")
+      if (displayId !== ""){
+        fetchLike()
+        fetchFavorite()
+      }
+    })
+  
+    const fetchLike = async () => {
+      try{
+        const res = await fetch(
+          "https://hackathon-backend-1012715555694.us-central1.run.app/getlike",
+          {
+              method: "POST",
+              body: JSON.stringify({
+                user_id: displayId
+              }),
+              headers: {
+                  "Content-Type": "application/json",
+              }
+          }
+      );
+      if (!res.ok) {
+          console.log(res)
+          throw Error("Failed to fetch follows: {res.status}");
+      }
+      const data:Like[] = await res.json();
+      setLikes(data)
+      // console.log("Likes is ", likes)
+    } catch (err) {
+      console.log(err)
+    }}
+
+    const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const auth = getAuth();
+      const user = auth.currentUser
+      if (!user) {
+        alert("ログインしてください")
+        return;
+      } else {
+        try {
+          if (typeof user.email === "string") {
+            const credential = EmailAuthProvider.credential(
+              user.email,
+              currentPassword
+            );
+            await reauthenticateWithCredential(user, credential)
+
+            await updatePassword(user, newPassword);
+
+            alert("パスワードが変更されました")
+          }
+        } catch (error) {
+          alert(`エラー`)
+        }
+      }
+    }
+  
 
     
     const fetchUser = async (uid: string) => {
@@ -169,8 +331,9 @@ const ProfilePage = () => {
         if (userDoc.exists()) {
           setDisplayfig(userDoc.data().figid)
           setDisplayname(userDoc.data().registername)
+          setStatusmessage(userDoc.data()?.statusmessage || "")
         } else {
-          console.log("userfigid is not defined")
+          // console.log("userfigid is not defined")
           setDisplayfig("")
         }
       } catch (err) {
@@ -227,6 +390,8 @@ const ProfilePage = () => {
       }
       getUserData();
     }, [follows])
+  
+  
 
     const fetchNamesFromFollows = async (follows: Follow[]) => {
       const names = await Promise.all(
@@ -333,6 +498,12 @@ const ProfilePage = () => {
             return false
         }
     }
+
+    const publicTweets = usernames.filter(tweet => privateIds?.every(id => id !== tweet.name) || isfollow(displayId, tweet.name) || displayId === tweet.name);
+    const filteredTweets = publicTweets.filter(tweet => {
+      const regex = new RegExp(user_name, 'i');
+      return regex.test(tweet.name)
+  })
     const fetchTweet = async () => {
         try {
           const res = await fetch(
@@ -357,9 +528,9 @@ const ProfilePage = () => {
         }
       }
 
-    const toggleModal = () => {
-      setModalOpen(!isModalOpen)
-    }
+    // const toggleModal = () => {
+    //   setModalOpen(!isModalOpen)
+    // }
     const selectChangedString = (oldstring: string, newstring: string) => {
       return newstring !== "" ? newstring:oldstring;
     }
@@ -368,7 +539,7 @@ const ProfilePage = () => {
 
       try {
         await updateDoc(docRef, newData);
-        console.log("Document successfully updated")
+        // console.log("Document successfully updated")
       } catch(error) {
         console.log("Error updating document", error)
       }
@@ -379,7 +550,8 @@ const ProfilePage = () => {
       const name = selectChangedString(displayname, name_changed)
       const figid = selectChangedString(displayfig, fig_changed)
       const message = selectChangedString(statusmessage, statusmessage_changed)
-      await updateData(displayId, {registername: name, figid:figid, statusmessage: message})
+      const publicity = selectChangedString(pub, pub_changed)
+      await updateData(displayId, {registername: name, figid:figid, statusmessage: message, publicity: publicity})
     } 
     const handlelike = async (id: string) => {
         try {
@@ -397,6 +569,22 @@ const ProfilePage = () => {
             })
             fetchTweet()
         }catch (err){
+          console.log(err)
+        }
+      }
+      const handlefavorite = async (id: string) => {
+        try {
+          const res = await fetch(
+            "https://hackathon-backend-1012715555694.us-central1.run.app/favorite", 
+            {
+              method: "POST",
+              body: JSON.stringify({
+                tweet_id: id,
+                user_id: displayId,
+              }),
+            })
+            fetchTweet()
+        } catch (err) {
           console.log(err)
         }
       }
@@ -482,10 +670,34 @@ const ProfilePage = () => {
           return ""
         }
       }
+      const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setPub_changed(event.target.value);
+      };
+      const toggleSidebar = () => {
+        setIsvisible(!isvisible)
+      }
+
+      const change_lang = (lang:string) => {
+        if (lang === "Python") {
+          return "python"
+        } else if (lang === "JavaScript") {
+          return "javascript"
+        } else if (lang === "Go") {
+          return "go"
+        }
+      }
     
+      // SyntaxHighlighter.registerLanguage('python', python);
+      // SyntaxHighlighter.registerLanguage("javaScript", javascript)
+      // SyntaxHighlighter.registerLanguage("go", go)
+      
     return (
       <div className="app">
         {/* <div className="app_profile"> */}
+        <div
+        className={`content ${isvisible ? "no-click" : ""}`}
+        onClick={() => isvisible && setIsvisible(false)}
+      >
         <div className="profile">
             <div className="profileheader">
                 <div className="profilename">
@@ -501,24 +713,19 @@ const ProfilePage = () => {
                 </div>
                 {displayId === user_name ? (
                   <div>
-                  <button onClick={toggleModal}>ユーザープロファイルの変更</button>
+                  <button onClick={() => setModalOpen("modal_change")}>ユーザープロファイルの変更</button>
                   </div>
                 ):(
                   null
                 )}
 
                 <div className="profilefollow">
-                    <div className="background">
-                        <div className="black">フォロー</div>
-                        {Object.values(filteredFollows).map((follow) => 
-                        <div className="follow">
-                            {follow.followedname}
-                        </div>
-                        )}
-                    </div>
+                  <div>
+                  <button onClick={() => setModalOpen("modal_follow")}>フォロー</button>
+                  </div>
                     <div>
                     {displayId !== user_name ? (
-                        <div className="background">
+                      <div>
                         {isfollow(displayId, user_name) ? (
                             <div>フォロー済</div>
                         ) : (
@@ -538,15 +745,7 @@ const ProfilePage = () => {
                         )}
                         </div>
                     ) : (
-                      <div className="background">
-                        <div className="black">フォローリクエスト</div>
-                        {Object.values(filteredFollowreqs).map((followreq) => 
-                        <div className="followrequest">
-                            <div>{followreq.followerreqname}</div>
-                            <button onClick={() => acceptfollow(followreq.followerreq)} type="submit">フォローを受け入れる</button>
-                        </div>
-                        )}
-                        </div>
+                    <button onClick={() => setModalOpen("modal_followreq")}>フォローリクエスト</button>
                     )}
                     </div>
                 </div>    
@@ -580,15 +779,15 @@ const ProfilePage = () => {
                 </Link> 
                 <div className="tweetoption">
                 <div className="tweetlike">
-                    <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                      <div className="like_icon">
-                        <FontAwesomeIcon icon={faThumbsUp} />
-                      </div>
-                      <div className="like_number">
-                      {tweet.liked}
-                      </div>
-                      </button>
-                    </div>
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
+                  </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                   <div className="tweetreply">
                   <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                   <div>
@@ -609,7 +808,12 @@ const ProfilePage = () => {
                   </div>
                   </Link>
                   </div>
-                  <div className="tweetreply">
+                  <div className="tweet_favorite">
+                    <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                      <div className="favorite_icon">
+                        <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 {tweet.code === "" ? (
@@ -620,7 +824,16 @@ const ProfilePage = () => {
               <button onClick={() => handleClick(index)}>code</button>
             </div>
             <div>
-              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
             </div>
             {displayId === tweet.name ? (
               <div>
@@ -638,7 +851,7 @@ const ProfilePage = () => {
             )}
             </div>
             )}
-                <PreviewImage imagename={tweet.figid}/>
+                <PreviewImage_square imagename={tweet.figid}/>
                 </div>
             </div>
             ) : (
@@ -683,16 +896,16 @@ const ProfilePage = () => {
                       </div>
                       </Link> 
                       <div className="tweetoption">
-                        <div className="tweetlike">
-                        <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                          <div className="like_icon">
-                            <FontAwesomeIcon icon={faThumbsUp} />
-                          </div>
-                          <div className="like_number">
-                          {tweet.liked}
-                          </div>
-                          </button>
-                        </div>
+                      <div className="tweetlike">
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
+                  </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                         <div className="tweetreply">
                         <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                         <div>
@@ -713,7 +926,12 @@ const ProfilePage = () => {
                         </div>
                         </Link>
                         </div>
-                        <div className="tweetreply">
+                        <div className="tweet_favorite">
+                          <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                            <div className="favorite_icon">
+                              <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       {tweet.code === "" ? (
@@ -724,7 +942,16 @@ const ProfilePage = () => {
               <button onClick={() => handleClick(index)}>code</button>
             </div>
             <div>
-              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
             </div>
             {displayId === tweet.name ? (
               <div>
@@ -742,7 +969,7 @@ const ProfilePage = () => {
             )}
             </div>
             )}
-                    <PreviewImage imagename={tweet.figid}/>
+                    <PreviewImage_square imagename={tweet.figid}/>
                     </div>
                   </div>
                   </div>
@@ -791,15 +1018,15 @@ const ProfilePage = () => {
                       </Link> 
                       <div className="tweetoption">
                       <div className="tweetlike">
-                        <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                          <div className="like_icon">
-                            <FontAwesomeIcon icon={faThumbsUp} />
-                          </div>
-                          <div className="like_number">
-                          {tweet.liked}
-                          </div>
-                          </button>
-                        </div>
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
+                  </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                         <div className="tweetreply">
                         <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                         <div>
@@ -819,7 +1046,12 @@ const ProfilePage = () => {
                         </div>
                         </Link>
                         </div>                    
-                        <div className="tweetreply">
+                        <div className="tweet_favorite">
+                          <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                            <div className="favorite_icon">
+                              <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                            </div>
+                          </div>
                         </div>
                       </div>
                       {tweet.code === "" ? (
@@ -830,7 +1062,16 @@ const ProfilePage = () => {
               <button onClick={() => handleClick(index)}>code</button>
             </div>
             <div>
-              {visibleItems.includes(index) && <div>{tweet.code}</div>}
+            {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
             </div>
             {displayId === tweet.name ? (
               <div>
@@ -848,7 +1089,7 @@ const ProfilePage = () => {
             )}
             </div>
             )}
-                    <PreviewImage imagename={tweet.figid}/>
+                    <PreviewImage_square imagename={tweet.figid}/>
                   </div>
                   </div>
                 </div>
@@ -861,10 +1102,25 @@ const ProfilePage = () => {
       </div>
             </div>
         </div>
+        </div>
         <h1 className="app-name">
         Engineer Lounge of Innovation and Insight
       </h1>
-      
+      {!isvisible ? (
+        <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="sidebar_button">
+        ☰
+       </button>
+      ):(
+        null
+      )}
+      <div className={`sidebar ${isvisible ? 'show' : 'hidden'}`}>
+      {isvisible ? (
+        <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="sidebar_button">
+        x
+       </button>
+      ):(
+        null
+      )}
         <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>
@@ -902,12 +1158,38 @@ const ProfilePage = () => {
         <FontAwesomeIcon icon={faUser}/>
       </div>
       <div>
-        Profile
+        プロフィール
       </div>
       </Link>
+      <Link href="./favorite" className="favorite_page">
+        <div>
+          <FontAwesomeIcon icon={faHeart}/>
+        </div>
+        <div>
+          お気に入り
+        </div>
+      </Link>
+      { isLoggin ? (
+        <div onClick={signOutfromfire} className="logout">
+        <div>
+        <FontAwesomeIcon icon={faRightFromBracket} />
+        </div>
+        <div>ログアウト</div>
+        </div>
+      ): (
+        <Link href={"./"} className="login_page" >
+          <div>
+            <FontAwesomeIcon icon={faRightToBracket} />
+          </div>
+          <div>
+            ログイン
+          </div>
+        </Link>
+      )}
+      </div>
         
     {/* </div> */}
-    <Modal isOpen={isModalOpen} onClose={toggleModal}>
+    <Modal isOpen={isModalOpen === "modal_change"} onClose={() => setModalOpen("")}>
         <div>プロフィールの変更</div>
           <div className="register">
             <form onSubmit={changeprofile}>
@@ -931,11 +1213,57 @@ const ProfilePage = () => {
               onChange={(e) => setStatusmessage_changed(e.target.value)}
             >
               </input>
+              <label>公開設定</label>
+              <select value={pub_changed} onChange={handleSelectChange}>
+                <option value={pub}>変更しない</option>
+                <option value="public">public</option>
+                <option value="private">private</option>
+              </select>
               <button>ユーザー情報変更</button>                      
             </form>
+            <button onClick={() => setModalOpen("modal_pass")} className="button_pass">パスワード変更</button>
           </div>
-          <button onClick={toggleModal}>閉じる</button>
-        </Modal>
+          <button onClick={() => setModalOpen("")}>閉じる</button>
+    </Modal>
+    <Modal isOpen={isModalOpen === "modal_follow"} onClose={() => setModalOpen("")}>
+      <div>フォロー</div>
+      {Object.values(filteredFollows).map((follow) => 
+        <Link href={{pathname: '/profile', query: {text: follow.followed}}} className="link">{follow.followedname}</Link>
+        )}
+    </Modal>
+    <Modal isOpen={isModalOpen === "modal_followreq"} onClose={() => setModalOpen("")}>
+      <div>フォローリクエスト</div>
+      {Object.values(filteredFollowreqs).map((followreq) => 
+        <div className="followrequest">
+            <Link href={{pathname: '/profile', query: {text: followreq.followerreq}}} className="link">{followreq.followerreqname}</Link>
+            <button onClick={() => acceptfollow(followreq.followerreq)} type="submit">フォローを受け入れる</button>
+        </div>
+        )}
+    </Modal>
+    <Modal isOpen={isModalOpen === "modal_pass"} onClose={() => setModalOpen("")}>
+      <div>パスワード変更</div>
+      <form onSubmit={handlePasswordChange}>
+        <div>
+          <label>現在のパスワード: </label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>新しいパスワード: </label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit">変更</button>
+      </form>
+    </Modal>
     </div>
     )
 }

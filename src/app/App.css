@@ -4,13 +4,15 @@
   color: #fff;
   height: 100vh;
   z-index: 0;
+  width: 100%;
 }
 .app {
   background: linear-gradient(45deg, #8e44ad, #3498db);
   font-family: 'Helvetica Neue', sans-serif;
   color: #fff;
-  height: 120vh;
+  height: 100vh;
   z-index: 0;
+  width: 100%;
 }
 
 header {
@@ -27,6 +29,9 @@ header {
   pointer-events: none;
 }
 
+* {
+  white-space: pre-wrap;
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
@@ -164,6 +169,14 @@ label {
   flex-direction: column;
 }
 
+.login_option {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+
 .register {
   display: flex;
   flex-direction: column;
@@ -295,7 +308,7 @@ button {
 }
 
 .user_container_pro {
-  height: 100vh;
+  /* height: 100vh; */
   /* background-color: transparent; */
   overflow: auto;
 }
@@ -335,6 +348,42 @@ button {
   justify-content: center;
   flex-direction: column;
 }
+
+.tweet_favorite {
+    /* padding: 8px, 24px; */
+    margin: 0px, 0px;
+    line-height: 1;
+    font-size: 16px;
+    height: 50px;
+    border: none;
+    color: inherit;
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.icon {
+  cursor: pointer;
+  font-size: 20px;
+  transition: color 0.3s ease, transform 0.2s ease;
+  color: #fff; /* デフォルトの白色 */
+}
+
+.icon.liked {
+  color: #ffd700; /* ゴールド系の明るい色 */
+  transform: scale(1.2); /* 少し拡大して注目を集める */
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* 光沢効果 */
+}
+
+.icon.favorited {
+  color: #ffd700; /* ゴールド系の明るい色 */
+  transform: scale(1.2); /* 少し拡大して注目を集める */
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); /* 光沢効果 */
+}
+
+
 .like_icon {
   margin-top: 9px;
 }
@@ -352,7 +401,7 @@ button {
 .tweetoption div {
   display: flex;
   /* justify-content: center; */
-  margin-right: 30px;
+  margin-right: 20px;
 }
 
 .tweetreply {
@@ -378,7 +427,7 @@ button {
 
 .retweet {
   margin-left: 10px;
-  background-color: rgba(255, 255, 255, 0.9); /* 半透明の白 */
+  background-color: rgba(255, 255, 255, 0.7); /* 半透明の白 */
   border: 1px solid rgba(255, 255, 255, 0.5); /* 薄いボーダー */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* やわらかいシャドウ */
   padding: 16px;
@@ -410,6 +459,10 @@ button {
 
 .user_profile div {
   margin-right: 5px;
+}
+.link {
+  color: inherit;
+  text-decoration: none;
 }
 
 .app-name {
@@ -466,6 +519,40 @@ button {
   padding-right: 5px;
   border: 2px solid white;
   width: 100%;
+}
+.view_page_log {
+  color: inherit;
+  text-decoration: none;
+  padding-top: 5px;
+  padding-left: 5px;
+  padding-bottom: 5px;
+  padding-right: 5px;
+  border: 2px solid white;
+  width: 100%;
+}
+
+.favorite_page {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
+  left: 5%;
+  top: 70%;
+}
+
+
+.login_page {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
+  left: 5%;
+  top: 80%;
+}
+.logout {
+  color: inherit;
+  text-decoration: none;
+  position: fixed;
+  left: 5%;
+  top: 80%;
 }
 
 .site {
@@ -549,12 +636,12 @@ button {
 .profilecontent {
   display: flex;
   flex-direction: column;
-  /* flex: 1; */
-  /* overflow: auto; */
-  /* flex-grow: 1; */
+  flex: 1;
+  overflow: auto;
+  flex-grow: 1;
   padding: 19px;
   height: 50%;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .post {
@@ -649,3 +736,64 @@ button {
 .icon {
   transform: scaleX(-1) rotate(90deg);
 }
+
+.button_pass {
+  margin-bottom: 30px;
+}
+
+
+@media (max-width: 800px) {
+  .user_container {
+    left: 10%;;
+    width: 100%;
+  }
+
+  .sidebar {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  .sidebar.show {
+    transform: translateY(0); /* メニューが表示される */
+  }
+}
+
+.sidebar_button {
+  background: none;
+  border: none;
+  font-size: 1.2rem; /* アイコンを小さく */
+  line-height: 1; /* コンパクトに */
+  cursor: pointer;
+  padding: 5px; /* アイコン周りの余白を少なく */
+  display: flex; /* アイコンを中央に配置 */
+  align-items: center;
+  justify-content: center;
+  width: 36px; /* ボタンの幅 */
+  height: 36px; /* ボタンの高さ */
+  border-radius: 50%; /* 丸いボタンにする */
+  background-color: #3498db; /* ボタンの背景色 */
+  color: white; /* アイコンの色 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 軽い影を追加 */
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.menu-btn:hover {
+  background-color: #2980b9; /* ホバー時の色変更 */
+  transform: scale(1.1); /* ホバー時に少し拡大 */
+}
+
+.content {
+  padding: 20px;
+  transition: opacity 0.3s ease;
+}
+
+/* サイドバーが開いているときのコンテンツ操作不可状態 */
+.content.no-click {
+  pointer-events: none; /* クリックを無効化 */
+  opacity: 0.5; /* ビジュアル上操作不可感を演出 */
+}
+

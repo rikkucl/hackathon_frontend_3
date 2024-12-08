@@ -53,7 +53,7 @@ import { promises } from "dns";
 // }
 
 
-export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => {
+export const PreviewImage_square: React.FC<{ imagename: string }> = ({ imagename }) => {
     const [prevUrl, setPrevUrl] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [imageLoaded, setImageLoaded] = useState(false)
@@ -110,7 +110,7 @@ export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => 
                         <img
                         src={prevUrl}
                         alt={"error"}
-                        style={{ height: 100, width: 100, borderRadius: "50%", border:"2px solid black", objectFit: "cover"}}
+                        style={{ height: "auto", width: "50%", border:"2px solid black", objectFit: "cover"}}
                         />
                         ) :(
                             <p>No image</p>
@@ -124,5 +124,5 @@ export const PreviewImage: React.FC<{ imagename: string }> = ({ imagename }) => 
     </div>
     )
 }
-export default PreviewImage;
+export default PreviewImage_square;
 

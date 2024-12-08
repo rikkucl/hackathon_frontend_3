@@ -10,14 +10,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faRightFromBracket, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
+
 import { getFirestore, collection, query, where, getDocs, getDoc, doc, namedQuery } from "firebase/firestore";
 import { fireAuth, db } from "../lib//firebase";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
 
 import { faComment } from "@fortawesome/free-solid-svg-icons";
 import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 import { faHouse} from "@fortawesome/free-solid-svg-icons";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
 
 interface QueryParams {
   text: string;
@@ -43,6 +47,10 @@ const PostPage = () => {
     const [tweet_id, setTweet_id] = useState<string>("")
     const [tweet, setTweet] = useState<Tweet>(Tweets[0])
     const [displayid, setDisplayid] = useState<string>("")
+    const [isLoggin, setIsLoggin] = useState(false);
+    const [isvisible, setIsvisible] = useState(false) 
+
+
     const router = useRouter();
 
 
@@ -56,6 +64,13 @@ const PostPage = () => {
     }, [])
     useEffect(() => {
       const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsLoggin(true);
+        } else {
+          setIsLoggin(false)
+        }
+      })
       const user = auth.currentUser
       if (user) {
         const uid = user.uid
@@ -79,14 +94,47 @@ const PostPage = () => {
         console.log("error happened", err)
       }
     }
+  
+    const signOutfromfire = (): void => {
+      signOut(fireAuth).then(() => {
+        setDisplayname("")
+        setDisplayid("")
+        setDisplayfig("")
+        alert("ログアウトしました");
+      }).catch(err => {
+        alert(err);
+      });
+    };
+    const toggleSidebar = () => {
+      setIsvisible(!isvisible)
+    }
 
     return (
         <div className="App">
+          <div
+        className={`content ${isvisible ? "no-click" : ""}`}
+        onClick={() => isvisible && setIsvisible(false)}
+        >
         <ReTweet router={router} tweetto_id={tweet_id} />
+        </div>
         <h1 className="app-name">
         Engineer Lounge of Innovation and Insight
       </h1>
-      
+      {!isvisible ? (
+        <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="sidebar_button">
+        ☰
+       </button>
+      ):(
+        null
+      )}
+      <div className={`sidebar ${isvisible ? 'show' : 'hidden'}`}>
+      {isvisible ? (
+        <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="sidebar_button">
+        x
+       </button>
+      ):(
+        null
+      )}
         <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>
@@ -124,9 +172,35 @@ const PostPage = () => {
         <FontAwesomeIcon icon={faUser}/>
       </div>
       <div>
-        Profile
+        プロフィール
       </div>
       </Link>
+      <Link href="./favorite" className="favorite_page">
+        <div>
+          <FontAwesomeIcon icon={faHeart}/>
+        </div>
+        <div>
+          お気に入り
+        </div>
+      </Link>
+      { isLoggin ? (
+        <div onClick={signOutfromfire} className="logout">
+        <div>
+        <FontAwesomeIcon icon={faRightFromBracket} />
+        </div>
+        <div>ログアウト</div>
+        </div>
+      ): (
+        <Link href={"./"} className="login_page" >
+          <div>
+            <FontAwesomeIcon icon={faRightToBracket} />
+          </div>
+          <div>
+            ログイン
+          </div>
+        </Link>
+      )}
+      </div>
       </div>
     )
 }

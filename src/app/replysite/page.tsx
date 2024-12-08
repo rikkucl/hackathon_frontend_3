@@ -10,6 +10,7 @@ import { isAwaitExpression, transform } from "typescript";
 //import { LoginForm } from './FirebaseLogin';
 import { onAuthStateChanged, getAuth } from "firebase/auth";
 import { fireAuth, db } from "../lib//firebase";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { getFirestore, collection, query, where, getDocs, getDoc, doc, namedQuery } from "firebase/firestore";
 //import Post from "./PostFigure"
 import { useRouter } from "next/navigation"
@@ -24,7 +25,19 @@ import { faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 import { faTurnDown } from "@fortawesome/free-solid-svg-icons";
 import { faHouse} from "@fortawesome/free-solid-svg-icons";
+import { faRightFromBracket, faRightToBracket } from "@fortawesome/free-solid-svg-icons";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+
 import firebase from "firebase/compat/app";
+
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { atomOneDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/hljs/javascript';
+import go from 'react-syntax-highlighter/dist/esm/languages/hljs/go';
+import PreviewImage_square from "../lib/PreviewImage_square";
 
 
 interface Tweet {
@@ -45,12 +58,34 @@ interface Tweet {
   username?: string;
   retweettoname?: string
 }
+interface Like {
+  tweet_id: string
+}
+interface Favorite {
+  tweet_id: string
+}
+interface Follow {
+  follower: string;
+  followed: string;
+  followername?: string;
+  followedname?: string;
+}
 const Replypage = () => {
     const {Tweets, setTweets, displayname, setDisplayname, displayfig, setDisplayfig, status, setStatus, followreqs, setFollowreqs, follows, setFollows} = useAppContext();
     const [tweet_id, setTweet_id] = useState<string>("")
     const [visibleItems, setVisibleItems] = useState<number[]>([]);
     const [displayId, setDisplayId] = useState<string>("")
     const [userNames, setUsernames] = useState<Tweet[]>([])
+    const [isLoggin, setIsLoggin] = useState(false);
+    const [likes, setLikes] = useState<Like[]>([])
+    const [favorites, setFavorites] = useState<Favorite[]>([])
+    const [privateIds, setPrivateIds] = useState<string[]>([])
+    const [isvisible, setIsvisible] = useState(false) 
+
+
+
+
+
 
     useEffect(() => {
       const querystring = window.location.search;
@@ -62,6 +97,13 @@ const Replypage = () => {
     }, [])
     useEffect(() => {
       const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          setIsLoggin(true);
+        } else {
+          setIsLoggin(false)
+        }
+      })
       const user = auth.currentUser
       if (user) {
         const uid = user.uid
@@ -78,6 +120,80 @@ const Replypage = () => {
       }
       getUserData();
     }, [Tweets])
+
+    useEffect(() => {
+      // console.log("getlike")
+      if (displayId !== ""){
+        fetchLike()
+        fetchFavorite()
+      }
+    })
+  
+    const fetchLike = async () => {
+      try{
+        const res = await fetch(
+          "https://hackathon-backend-1012715555694.us-central1.run.app/getlike",
+          {
+              method: "POST",
+              body: JSON.stringify({
+                user_id: displayId
+              }),
+              headers: {
+                  "Content-Type": "application/json",
+              }
+          }
+      );
+      if (!res.ok) {
+          console.log(res)
+          throw Error("Failed to fetch follows: {res.status}");
+      }
+      const data:Like[] = await res.json();
+      setLikes(data)
+      // console.log("Likes is ", likes)
+    } catch (err) {
+      console.log(err)
+    }}
+    
+  const fetchFavorite = async () => {
+    try{
+      const res = await fetch(
+        "https://hackathon-backend-1012715555694.us-central1.run.app/getfavorite",
+        {
+            method: "POST",
+            body: JSON.stringify({
+              user_id: displayId
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        }
+    );
+    if (!res.ok) {
+        console.log(res)
+        throw Error("Failed to fetch follows: {res.status}");
+    }
+    const data:Favorite[] = await res.json();
+    setFavorites(data)
+    // console.log("Likes is ", likes)
+  } catch (err) {
+    console.log(err)
+  }}
+
+  useEffect(() => {
+    getPrivate()
+  })
+
+  const getPrivate = async () => {
+    const userCollection = collection(db, "users");
+    const q = query(userCollection, where("publicity", "==", "private"))
+    try {
+      const querySnapshot = await getDocs(q)
+      setPrivateIds(querySnapshot.docs.map(doc => doc.id))
+    }catch (error) {
+      console.log('Error getting documents: ', error)
+    }
+  }
+  
     const fetchNamesFromTweets = async (Objects: Tweet[]) => {
       const names = await Promise.all(
         Objects.map(async (tweet) => {
@@ -89,8 +205,8 @@ const Replypage = () => {
           else {
             const name = await fetchName(tweet.name);
             const retweettoname = await fetchName(ConvertFromIdToName(tweet.retweetto))
-            console.log("tweet.retweetto is",tweet.retweetto)
-            console.log("retweettoname is",retweettoname)
+            // console.log("tweet.retweetto is",tweet.retweetto)
+            // console.log("retweettoname is",retweettoname)
             return { ...tweet, username: name, retweettoname: retweettoname}
           }
         })
@@ -100,11 +216,11 @@ const Replypage = () => {
     const fetchName = async (uid: string) => {
       try {
         const userDoc = await getDoc(doc(db, "users", uid));
-        console.log(uid)
+        // console.log(uid)
         if (userDoc.exists()) {
           return userDoc.data().registername
         } else {
-          console.log("do not exists userDoc")
+          // console.log("do not exists userDoc")
           return ""
         }
       } catch (err) {
@@ -113,15 +229,64 @@ const Replypage = () => {
         return ""
       }
     }
-    const filteredTweets = userNames.filter(tweet => {
-        const regex = new RegExp(tweet_id, 'i');
-        return regex.test(tweet.replyto)
-    })
+    
 
     const originTweets = userNames.filter(tweet => {
       const regex = new RegExp(tweet_id, 'i');
       return regex.test(tweet.id)
   })
+
+  const fetchFollow = async () => {
+    try {
+        const res = await fetch(
+            "https://hackathon-backend-1012715555694.us-central1.run.app/follow",
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            }
+        );
+        if (!res.ok) {
+            console.log(res)
+            throw Error("Failed to fetch follows: {res.status}");
+        }
+        const data:Follow[] = await res.json();
+        setFollows(data)
+    } catch (err) {
+        console.log(err)
+    }
+  }
+  const isfollow = (follower:string, followed:string) => {
+    const foundItem = follows.find(follow => follow.follower === follower &&  follow.followed === followed)
+    if (foundItem) {
+        return true;
+    } else {
+        return false
+    }
+  }
+  useEffect(() => {
+    fetchFollow()
+  })
+
+
+  const publicTweets = userNames.filter(tweet => privateIds?.every(id => id !== tweet.name) || isfollow(displayId, tweet.name) || displayId === tweet.name);
+  const filteredTweets = publicTweets.filter(tweet => {
+    const regex = new RegExp(tweet_id, 'i');
+    return regex.test(tweet.replyto)
+})
+
+
+  const signOutfromfire = (): void => {
+    signOut(fireAuth).then(() => {
+      setDisplayname("")
+      setDisplayId("")
+      setDisplayfig("")
+      alert("ログアウトしました");
+    }).catch(err => {
+      alert(err);
+    });
+  };
     const handleClick = (key: number) => {
         setVisibleItems((prev) =>{
           if (prev.includes(key)) {
@@ -147,6 +312,22 @@ const Replypage = () => {
             })
             fetchTweet()
         }catch (err){
+          console.log(err)
+        }
+      }
+      const handlefavorite = async (id: string) => {
+        try {
+          const res = await fetch(
+            "https://hackathon-backend-1012715555694.us-central1.run.app/favorite", 
+            {
+              method: "POST",
+              body: JSON.stringify({
+                tweet_id: id,
+                user_id: displayId,
+              }),
+            })
+            fetchTweet()
+        } catch (err) {
           console.log(err)
         }
       }
@@ -181,7 +362,7 @@ const Replypage = () => {
         setDisplayfig(userDoc.data().figid)
         setDisplayname(userDoc.data().registername)
       } else {
-        console.log("userfigid is not defined")
+        // console.log("userfigid is not defined")
         setDisplayfig("")
       }
     } catch (err) {
@@ -268,11 +449,34 @@ const Replypage = () => {
       return ""
     }
   }
+  const toggleSidebar = () => {
+    setIsvisible(!isvisible)
+  }
+
+  const change_lang = (lang:string) => {
+    if (lang === "Python") {
+      return "python"
+    } else if (lang === "JavaScript") {
+      return "javascript"
+    } else if (lang === "Go") {
+      return "go"
+    }
+  }
+
+  // SyntaxHighlighter.registerLanguage('python', python);
+  // SyntaxHighlighter.registerLanguage("javaScript", javascript)
+  // SyntaxHighlighter.registerLanguage("go", go)
+
+
     
 
     return (
       <div>
       <div className="app">
+        <div
+        className={`content ${isvisible ? "no-click" : ""}`}
+        onClick={() => isvisible && setIsvisible(false)}
+      >
         <div className="site">
           <div className="user_container_ori">
         {Object.values(originTweets).map((tweet, index) =>
@@ -299,15 +503,15 @@ const Replypage = () => {
               </Link> 
               <div className="tweetoption">
               <div className="tweetlike">
-                  <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                    <div className="like_icon">
-                      <FontAwesomeIcon icon={faThumbsUp} />
-                    </div>
-                    <div className="like_number">
-                    {tweet.liked}
-                    </div>
-                    </button>
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
                   </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                 <div className="tweetreply">
                 <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                 <div>
@@ -328,7 +532,12 @@ const Replypage = () => {
                 </div>
                 </Link>
                 </div>
-                <div className="tweetreply">
+                <div className="tweet_favorite">
+                  <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                    <div className="favorite_icon">
+                      <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                    </div>
+                  </div>
                 </div>
               </div>
               {tweet.code === "" ? (
@@ -339,7 +548,16 @@ const Replypage = () => {
                 <button onClick={() => handleClick(index)}>code</button>
               </div>
               <div>
-                {visibleItems.includes(index) && <div>{tweet.code}</div>}
+              {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
               </div>
               {displayId === tweet.name ? (
                 <div>
@@ -357,7 +575,7 @@ const Replypage = () => {
               )}
               </div>
               )}
-              <PreviewImage imagename={tweet.figid}/>
+              <PreviewImage_square imagename={tweet.figid}/>
               </div>
           </div>
           ) : (
@@ -426,7 +644,16 @@ const Replypage = () => {
                 <button onClick={() => handleClick(index)}>code</button>
               </div>
               <div>
-                {visibleItems.includes(index) && <div>{tweet.code}</div>}
+              {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
               </div>
               {displayId === tweet.name ? (
                 <div>
@@ -444,7 +671,7 @@ const Replypage = () => {
               )}
               </div>
               )}
-                  <PreviewImage imagename={tweet.figid}/>
+                  <PreviewImage_square imagename={tweet.figid}/>
                 </div>
                 </div>
               </div>
@@ -474,15 +701,15 @@ const Replypage = () => {
                     </Link> 
                     <div className="tweetoption">
                     <div className="tweetlike">
-                      <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                        <div className="like_icon">
-                          <FontAwesomeIcon icon={faThumbsUp} />
-                        </div>
-                        <div className="like_number">
-                        {tweet.liked}
-                        </div>
-                        </button>
-                      </div>
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
+                  </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                       <div className="tweetreply">
                       <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                       <div>
@@ -502,8 +729,13 @@ const Replypage = () => {
                       </div>
                       </Link>
                       </div>                    
-                      <div className="tweetreply">
+                      <div className="tweet_favorite">
+                      <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                        <div className="favorite_icon">
+                          <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                        </div>
                       </div>
+                    </div>
                     </div>
                     {tweet.code === "" ? (
                 null
@@ -513,7 +745,16 @@ const Replypage = () => {
                 <button onClick={() => handleClick(index)}>code</button>
               </div>
               <div>
-                {visibleItems.includes(index) && <div>{tweet.code}</div>}
+              {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
               </div>
               {displayId === tweet.name ? (
                 <div>
@@ -531,7 +772,7 @@ const Replypage = () => {
               )}
               </div>
               )}
-                  <PreviewImage imagename={tweet.figid}/>
+                  <PreviewImage_square imagename={tweet.figid}/>
                 </div>
                 </div>
               </div>
@@ -568,15 +809,15 @@ const Replypage = () => {
               </Link> 
               <div className="tweetoption">
               <div className="tweetlike">
-                  <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                    <div className="like_icon">
-                      <FontAwesomeIcon icon={faThumbsUp} />
-                    </div>
-                    <div className="like_number">
-                    {tweet.liked}
-                    </div>
-                    </button>
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
                   </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                 <div className="tweetreply">
                 <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                 <div>
@@ -597,7 +838,12 @@ const Replypage = () => {
                 </div>
                 </Link>
                 </div>
-                <div className="tweetreply">
+                <div className="tweet_favorite">
+                  <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                    <div className="favorite_icon">
+                      <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                    </div>
+                  </div>
                 </div>
               </div>
               {tweet.code === "" ? (
@@ -608,7 +854,16 @@ const Replypage = () => {
                 <button onClick={() => handleClick(index)}>code</button>
               </div>
               <div>
-                {visibleItems.includes(index) && <div>{tweet.code}</div>}
+              {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
               </div>
               {displayId === tweet.name ? (
                 <div>
@@ -626,7 +881,7 @@ const Replypage = () => {
               )}
               </div>
               )}
-              <PreviewImage imagename={tweet.figid}/>
+              <PreviewImage_square imagename={tweet.figid}/>
               </div>
               </div>
           </div>
@@ -659,16 +914,16 @@ const Replypage = () => {
                     </div>
                     </Link> 
                     <div className="tweetoption">
-                      <div className="tweetlike">
-                      <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                        <div className="like_icon">
-                          <FontAwesomeIcon icon={faThumbsUp} />
-                        </div>
-                        <div className="like_number">
-                        {tweet.liked}
-                        </div>
-                        </button>
-                      </div>
+                    <div className="tweetlike">
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
+                  </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                       <div className="tweetreply">
                       <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                       <div>
@@ -689,8 +944,13 @@ const Replypage = () => {
                       </div>
                       </Link>
                       </div>
-                      <div className="tweetreply">
+                      <div className="tweet_favorite">
+                      <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                        <div className="favorite_icon">
+                          <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                        </div>
                       </div>
+                    </div>
                     </div>
                     {tweet.code === "" ? (
                 null
@@ -700,7 +960,16 @@ const Replypage = () => {
                 <button onClick={() => handleClick(index)}>code</button>
               </div>
               <div>
-                {visibleItems.includes(index) && <div>{tweet.code}</div>}
+              {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
               </div>
               {displayId === tweet.name ? (
                 <div>
@@ -718,7 +987,7 @@ const Replypage = () => {
               )}
               </div>
               )}
-                  <PreviewImage imagename={tweet.figid}/>
+                  <PreviewImage_square imagename={tweet.figid}/>
                 </div>
                 </div>
               </div>
@@ -753,15 +1022,15 @@ const Replypage = () => {
                     </Link> 
                     <div className="tweetoption">
                     <div className="tweetlike">
-                      <button onClick={() => handlelike(tweet.id)} className="tweet_like">
-                        <div className="like_icon">
-                          <FontAwesomeIcon icon={faThumbsUp} />
-                        </div>
-                        <div className="like_number">
-                        {tweet.liked}
-                        </div>
-                        </button>
-                      </div>
+                <div onClick={() => handlelike(tweet.id)} className="tweet_like">
+                  <div className="like_icon">
+                    <FontAwesomeIcon icon={faThumbsUp} className={`icon ${likes?.some((like) => like.tweet_id === tweet.id) ? "liked":""}`} />
+                  </div>
+                  <div className="like_number">
+                  {tweet.liked}
+                  </div>
+                  </div>
+                </div>
                       <div className="tweetreply">
                       <Link href={{pathname: '/reply', query: { text: tweet.id } }} className="customLink">
                       <div>
@@ -781,8 +1050,13 @@ const Replypage = () => {
                       </div>
                       </Link>
                       </div>                    
-                      <div className="tweetreply">
+                      <div className="tweet_favorite">
+                      <div onClick={() => handlefavorite(tweet.id)} className="tweet_favorite">
+                        <div className="favorite_icon">
+                          <FontAwesomeIcon icon={faStar} className={`icon ${favorites?.some((favorite) => favorite.tweet_id === tweet.id) ? "favorited":""}`}/>
+                        </div>
                       </div>
+                    </div>
                     </div>
                     {tweet.code === "" ? (
                 null
@@ -792,7 +1066,16 @@ const Replypage = () => {
                 <button onClick={() => handleClick(index)}>code</button>
               </div>
               <div>
-                {visibleItems.includes(index) && <div>{tweet.code}</div>}
+              {visibleItems.includes(index) && 
+              <div style={{ padding: '10px', borderRadius: '5px', backgroundColor: '#f5f5f5' }}>
+              <SyntaxHighlighter language={change_lang(tweet.lang)} style={docco}>
+                {tweet.code}
+              </SyntaxHighlighter>
+              <CopyToClipboard text={tweet.code}>
+                <button style={{ marginTop: '10px', padding: '5px 10px' }}>コードをコピー</button>
+              </CopyToClipboard>
+            </div>
+              }
               </div>
               {displayId === tweet.name ? (
                 <div>
@@ -810,7 +1093,7 @@ const Replypage = () => {
               )}
               </div>
               )}
-                  <PreviewImage imagename={tweet.figid}/>
+                  <PreviewImage_square imagename={tweet.figid}/>
                 </div>
                 </div>
               </div>
@@ -824,10 +1107,25 @@ const Replypage = () => {
 
         </div>
         </div>
+        </div>
       <h1 className="app-name">
         Engineer Lounge of Innovation and Insight
       </h1>
-      
+      {!isvisible ? (
+        <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="sidebar_button">
+        ☰
+       </button>
+      ):(
+        null
+      )}
+      <div className={`sidebar ${isvisible ? 'show' : 'hidden'}`}>
+      {isvisible ? (
+        <button onClick={toggleSidebar} aria-label="Toggle Sidebar" className="sidebar_button">
+        x
+       </button>
+      ):(
+        null
+      )}
       <div className="user_profile">
         <div>
           <PreviewImage imagename={displayfig}></PreviewImage>
@@ -865,9 +1163,35 @@ const Replypage = () => {
         <FontAwesomeIcon icon={faUser}/>
       </div>
       <div>
-        Profile
+        プロフィール
       </div>
       </Link>
+      <Link href="./favorite" className="favorite_page">
+        <div>
+          <FontAwesomeIcon icon={faHeart}/>
+        </div>
+        <div>
+          お気に入り
+        </div>
+      </Link>
+      { isLoggin ? (
+        <div onClick={signOutfromfire} className="logout">
+        <div>
+        <FontAwesomeIcon icon={faRightFromBracket} />
+        </div>
+        <div>ログアウト</div>
+        </div>
+      ): (
+        <Link href={"./"} className="login_page" >
+          <div>
+            <FontAwesomeIcon icon={faRightToBracket} />
+          </div>
+          <div>
+            ログイン
+          </div>
+        </Link>
+      )}
+    </div>
     </div>
     </div>
 

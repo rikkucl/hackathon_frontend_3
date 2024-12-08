@@ -109,7 +109,7 @@ export const PreviewImageFromUser: React.FC<{ tweetname: string }> = ({ tweetnam
     //ツイートの名前からプロフィール画像をとって来る
     const FetchProfileFig = async (tweetname: string) => {
         try {
-            console.log(tweetname)
+            // console.log(tweetname)
             const userDoc = await getDoc(doc(db, "users", tweetname));
             // const userDoc = await getDocs(collection(db, "users"));
             //console.log(userDoc)
@@ -119,7 +119,7 @@ export const PreviewImageFromUser: React.FC<{ tweetname: string }> = ({ tweetnam
                 setImagename(userDoc.data().figid)
                 // setImagename(fig)
             } else {
-                console.log("userfigid is empty")
+                // console.log("userfigid is empty")
                 setImagename("")
             }
             } catch(error) {

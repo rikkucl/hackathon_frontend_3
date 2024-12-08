@@ -1,6 +1,6 @@
 // Modal.js
 import React from 'react';
-import './Modal.css'; // スタイルを別ファイルにする場合
+import './Modal.css';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;

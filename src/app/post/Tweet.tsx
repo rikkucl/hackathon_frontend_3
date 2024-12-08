@@ -54,7 +54,7 @@ export const Tweet: React.FC<FormProps> = ({router}) => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserid(user.uid);
-        console.log("userid id", user.uid);
+        // console.log("userid id", user.uid);
       } else {
         console.log("cannot find user");
       }

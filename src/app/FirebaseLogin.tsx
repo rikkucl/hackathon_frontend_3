@@ -1,5 +1,5 @@
 "use client"
-import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signOut, getAuth } from "firebase/auth";
 // import { auth } from "./firebase";
 import { fireAuth, db } from "./lib/firebase";
 import React, { useState, Dispatch, SetStateAction } from "react";
@@ -42,6 +42,17 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
   /**
    * googleでログインする
    */
+  const signInWithGoogle = async () => {
+    try {
+      const auth = getAuth();
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider)
+      alert("認証されました. ホーム画面へ移動します")
+      handleNavigation("/view")
+    } catch (error) {
+      alert(`エラー`)
+    }
+  }
   const signInfire = async (e:React.FormEvent<HTMLFormElement>) => {
     //setUser_name("riku")
     e.preventDefault()
@@ -56,7 +67,7 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
           setDisplayfig(userData.figid || "未設定")
           setStatus(userData.status || "未設定")
         }
-        alert("認証されました")
+        alert("認証されました. ホーム画面へ移動します")
         handleNavigation("/view")
     } catch(error){
         alert("間違ったメールアドレスまたはパスワード")
@@ -95,10 +106,16 @@ export const LoginForm: React.FC<Props> = ({router, setDisplayname, setDisplayfi
         </div>
         <button className="submit-button">ログイン</button>
       </form>
+      <button onClick={signInWithGoogle}>Google アカウントでログイン</button>
       </div>
+      <div className="login_option">
       <Link href={{pathname: "/register"}} className="register_page">
       ユーザー登録
       </Link>
+      <Link href={{pathname: "/view"}} className="view_page_log">
+      ログインせずに閲覧
+      </Link>
+      </div>
     </div>
   );
 };
