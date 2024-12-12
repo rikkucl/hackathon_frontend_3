@@ -23,6 +23,7 @@ import { faRetweet } from "@fortawesome/free-solid-svg-icons";
 import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { faHouse} from "@fortawesome/free-solid-svg-icons";
 import PreviewImage_square from "../lib/PreviewImage_square";
+import Tweet from "../post/Tweet";
 
 
 //Formの引数はfetch usersなので引数なし→void
@@ -30,7 +31,6 @@ type FormProps = {
   router: any
   tweetto_id: string;
 }
-
 interface Tweet {
   id: string;
   name: string;
@@ -46,6 +46,8 @@ interface Tweet {
   replynumber: number;
   retweetto: string;
   retweetcomment: string;
+  username?: string;
+  retweettoname?: string
 }
 interface Like {
   tweet_id: string
@@ -77,6 +79,8 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
   const [isLoading, setIsLoading] = useState(false)
   const [likes, setLikes] = useState<Like[]>([])
   const [favorites, setFavorites] = useState<Favorite[]>([])
+  const [userNames, setUsernames] = useState<Tweet[]>([])
+
 
 
 
@@ -92,9 +96,19 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
       console.log("cannot find user")
     }
   }, [])
+  useEffect(() => {
+    fetchTweet()
+  })
+  useEffect(() => {
+    const getUserData = async () => {
+      const data = await fetchNamesFromTweets(Tweets)
+      setUsernames(data)
+    }
+    getUserData();
+  }, [Tweets])
   useEffect (() => {
     findTweet(tweetto_id)
-  }, [])
+  }, [Tweets])
   useEffect(() => {
     // console.log("getlike")
     if (displayId !== ""){
@@ -152,10 +166,26 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
   } catch (err) {
     console.log(err)
   }}
+    const fetchName = async (uid: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      // console.log(uid)
+      if (userDoc.exists()) {
+        return userDoc.data().registername
+      } else {
+        console.log("do not exists userDoc")
+        return ""
+      }
+    } catch (err) {
+      // console.log(uid)
+      console.log("error happened", err)
+      return ""
+    }
+  }
 
   
   const findTweet = (id: string) => {
-    const foundTweet: Tweet|undefined = Tweets.find(tweet => tweet.id === id)
+    const foundTweet: Tweet|undefined = userNames.find(tweet => tweet.id === id)
     if (foundTweet !== undefined) {
       // console.log("found tweet")
       setTweetto(foundTweet)
@@ -294,6 +324,33 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
       console.log(err)
     }
   }
+  const ConvertFromIdToName = (id: string) => {
+    const TweetFiltered: Tweet| undefined = Tweets.find(tweet => tweet.id === id)
+    if (TweetFiltered !== undefined) {
+      return TweetFiltered.name
+    } else {
+      return ""
+    }
+  }
+  const fetchNamesFromTweets = async (Objects: Tweet[]) => {
+    const names = await Promise.all(
+      Objects.map(async (tweet) => {
+        // console.log("tweet.name", tweet.name)
+        if (tweet.retweetto === ""){
+          const name = await fetchName(tweet.name);
+          return { ...tweet, username: name}
+        }
+        else {
+          const name = await fetchName(tweet.name);
+          const retweettoname = await fetchName(ConvertFromIdToName(tweet.retweetto))
+          // console.log("tweet.retweetto is",tweet.retweetto)
+          // console.log("retweettoname is",retweettoname)
+          return { ...tweet, username: name, retweettoname: retweettoname}
+        }
+      })
+    )
+    return names;
+  }
 
 
   return (
@@ -314,7 +371,7 @@ export const ReTweet: React.FC<FormProps> = ({router, tweetto_id}: FormProps) =>
           <div className="tweet_all">
             <div className="tweet_user">
               <Link href={{pathname: "/profile", query: {text: tweetto?.name} }} className="twitter_profile">
-              {tweetto?.name}              
+              {tweetto?.username}              
               </Link>
               <div className="tweetdate">
               {tweetto.date}

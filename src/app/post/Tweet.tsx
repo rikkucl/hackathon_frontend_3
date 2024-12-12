@@ -66,7 +66,7 @@ export const Tweet: React.FC<FormProps> = ({router}) => {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!tweet) {
+    if (tweet === "") {
       alert("tweet is empty");
       return;
     }
